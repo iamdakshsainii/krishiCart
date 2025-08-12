@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -37,12 +36,17 @@ import FarmerAddProductPage from "./pages/farmer/AddProductPage";
 import FarmerEditProductPage from "./pages/farmer/EditProductPage";
 import FarmerOrdersPage from "./pages/farmer/OrdersPage";
 import FarmerProfilePage from "./pages/farmer/ProfilePage";
+import FarmConnectionPage from "./pages/farmer/FarmConnectionPage";
 
 // Admin Pages
 import AdminDashboardPage from "./pages/admin/DashboardPage";
 import AdminUsersPage from "./pages/admin/UsersPage";
 import AdminCategoriesPage from "./pages/admin/CategoriesPage";
 import AdminOrdersPage from "./pages/admin/OrdersPage";
+
+// Extra Components
+import WeatherWidget from "./components/WeatherWidget";
+import FarmerCustomerConnect from "./components/FarmerCustomerConnect";
 
 function App() {
   const dispatch = useDispatch();
@@ -56,6 +60,7 @@ function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Layout />}>
+          {/* Public Routes */}
           <Route index element={<HomePage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="login" element={<LoginPage />} />
@@ -65,8 +70,31 @@ function App() {
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/:id" element={<ProductDetailPage />} />
 
-          {/* Protected Routes */}
-          <Route element={<PrivateRoute />}>
+          {/* Weather Page - Public */}
+          <Route
+            path="weather"
+            element={
+              <div className="min-h-screen bg-white p-6">
+                <h1 className="text-2xl font-bold text-blue-700 mb-4">Weather</h1>
+                <WeatherWidget />
+              </div>
+            }
+          />
+
+          {/* Farm Connect - Protected Route (Farmers and Consumers only) */}
+          <Route element={<PrivateRoute allowedRoles={['farmer', 'consumer']} />}>
+            <Route
+              path="farm-connect"
+              element={
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+                  <FarmConnectionPage />
+                </div>
+              }
+            />
+          </Route>
+
+          {/* General Protected Routes (All authenticated users) */}
+          <Route element={<PrivateRoute allowedRoles={['farmer', 'consumer', 'admin']} />}>
             <Route path="profile" element={<ProfilePage />} />
             <Route path="messages" element={<MessagesPage />} />
             <Route path="messages/:userId" element={<ConversationPage />} />
@@ -83,16 +111,12 @@ function App() {
           <Route element={<FarmerRoute />}>
             <Route path="farmer/dashboard" element={<FarmerDashboardPage />} />
             <Route path="farmer/products" element={<FarmerProductsPage />} />
-            <Route
-              path="farmer/products/add"
-              element={<FarmerAddProductPage />}
-            />
-            <Route
-              path="farmer/products/edit/:id"
-              element={<FarmerEditProductPage />}
-            />
+            <Route path="farmer/products/add" element={<FarmerAddProductPage />} />
+            <Route path="farmer/products/edit/:id" element={<FarmerEditProductPage />} />
             <Route path="farmer/orders" element={<FarmerOrdersPage />} />
             <Route path="farmer/profile" element={<FarmerProfilePage />} />
+            {/* Farmer-specific Farm Connect - More advanced features */}
+            <Route path="farmer/farm-connect" element={<FarmConnectionPage />} />
           </Route>
 
           {/* Admin Routes */}
@@ -103,7 +127,7 @@ function App() {
             <Route path="admin/orders" element={<AdminOrdersPage />} />
           </Route>
 
-          {/* 404 Route */}
+          {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

@@ -1,28 +1,35 @@
 "use client";
-
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/slices/authSlice";
+import { usePermissions } from "./PrivateRoute";
 import {
   FaSeedling,
   FaShoppingCart,
-  FaBars,
-  FaTimes,
-  FaUser,
-  FaSignOutAlt,
   FaCrown,
+  FaSignOutAlt,
+  FaHandshake,
+  FaHome,
+  FaShoppingBasket,
+  FaUsers,
+  FaInfoCircle,
+  FaCloud,
+  FaLock,
 } from "react-icons/fa";
 
 const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.cart);
+
+  // Use permissions hook
+  const { canAccessFarmConnect, isFarmer, isConsumer, isAdmin } = usePermissions();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
@@ -32,319 +39,317 @@ const Navbar = () => {
     navigate("/");
   };
 
-  // Get user initials for avatar
   const getUserInitials = (name) => {
     if (!name) return "U";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
+    return name.split(" ").map((n) => n[0]).join("").toUpperCase();
+  };
+
+  // Check if current path is active
+  const isActiveLink = (path) => {
+    if (path === "/" && location.pathname === "/") return true;
+    if (path !== "/" && location.pathname.startsWith(path)) return true;
+    return false;
+  };
+
+  // Navigation items with icons and access control
+  const navItems = [
+    {
+      name: "Home",
+      path: "/",
+      icon: FaHome,
+      public: true
+    },
+    {
+      name: "Products",
+      path: "/products",
+      icon: FaShoppingBasket,
+      public: true
+    },
+    {
+      name: "Farmers",
+      path: "/farmers",
+      icon: FaUsers,
+      public: true
+    },
+    {
+      name: "Farm Connect",
+      path: "/farm-connect",
+      icon: FaHandshake,
+      isNew: true,
+      requiresAuth: true,
+      allowedRoles: ['farmer', 'consumer'],
+      lockIcon: !canAccessFarmConnect()
+    },
+    {
+      name: "Weather",
+      path: "/weather",
+      icon: FaCloud,
+      public: true
+    },
+    {
+      name: "About",
+      path: "/about",
+      icon: FaInfoCircle,
+      public: true
+    },
+  ];
+
+  // Filter navigation items based on access
+  const getVisibleNavItems = () => {
+    return navItems.filter(item => {
+      // Show public items to everyone
+      if (item.public) return true;
+
+      // Show protected items only to authenticated users
+      if (item.requiresAuth && !isAuthenticated) return true; // Show but disable
+
+      // Check specific role requirements
+      if (item.allowedRoles && isAuthenticated) {
+        return item.allowedRoles.includes(user?.role);
+      }
+
+      return true;
+    });
   };
 
   return (
-    <nav className="bg-white/95 backdrop-blur-lg shadow-xl sticky top-0 z-50 border-b border-blue-100">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex justify-between items-center">
-          {/* Epic Logo + Brand */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-xl blur opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-              <div className="relative bg-gradient-to-r from-blue-500 to-blue-700 p-3 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
-                <FaSeedling className="text-white text-xl" />
-              </div>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-900 tracking-tight">
-                KrishiCart
-              </span>
-              <span className="text-xs text-blue-600 font-medium -mt-1 tracking-wider">
-                PREMIUM
-              </span>
-            </div>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {["Home", "Products", "Farmers", "About"].map((item) => (
-              <Link
-                key={item}
-                to={item === "Home" ? "/" : `/${item.toLowerCase()}`}
-                className="relative group text-blue-800 hover:text-blue-600 transition-all duration-300 font-semibold text-lg"
-              >
-                <span className="relative z-10">{item}</span>
-                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-700 group-hover:w-full transition-all duration-300"></div>
-              </Link>
-            ))}
-
-            {/* Cart with Epic Design */}
-            {isAuthenticated && user?.role === "consumer" && (
-              <Link to="/checkout" className="relative group">
-                <div className="relative p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300 group-hover:scale-110 shadow-lg">
-                  <FaShoppingCart className="text-blue-700 text-xl" />
-                  {cartItems.length > 0 && (
-                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-pulse">
-                      {cartItems.length}
-                    </div>
-                  )}
-                </div>
-              </Link>
-            )}
-
-            {/* Auth Section */}
-            {isAuthenticated ? (
-              <div className="relative">
-                <button
-                  onClick={toggleProfile}
-                  className="group relative"
-                  aria-label="User menu"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full blur opacity-25 group-hover:opacity-40 transition-opacity duration-300"></div>
-                  <div className="relative w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
-                    {user?.role === "admin" && (
-                      <FaCrown className="absolute -top-1 -right-1 text-yellow-400 text-xs" />
-                    )}
-                    {getUserInitials(user?.name)}
-                  </div>
-                </button>
-
-                {isProfileOpen && (
-                  <div className="absolute right-0 mt-4 w-64 bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl py-3 z-20 border border-blue-100 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="px-4 py-3 border-b border-blue-100">
-                      <p className="text-sm font-medium text-gray-600">Signed in as</p>
-                      <p className="text-lg font-bold text-blue-800">{user?.name}</p>
-                      <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full font-medium capitalize mt-1">
-                        {user?.role}
-                      </span>
-                    </div>
-
-                    <div className="py-2">
-                      {user?.role === "admin" && (
-                        <Link
-                          to="/admin/dashboard"
-                          className="flex items-center space-x-3 px-4 py-3 text-blue-800 hover:bg-blue-50 transition-colors duration-200 font-medium"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <FaCrown className="text-yellow-500" />
-                          <span>Admin Dashboard</span>
-                        </Link>
-                      )}
-                      {user?.role === "farmer" && (
-                        <Link
-                          to="/farmer/dashboard"
-                          className="flex items-center space-x-3 px-4 py-3 text-blue-800 hover:bg-blue-50 transition-colors duration-200 font-medium"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
-                          <FaSeedling className="text-green-500" />
-                          <span>Farmer Dashboard</span>
-                        </Link>
-                      )}
-                      {user?.role !== "admin" && (
-                        <>
-                          <Link
-                            to="/profile"
-                            className="flex items-center space-x-3 px-4 py-3 text-blue-800 hover:bg-blue-50 transition-colors duration-200 font-medium"
-                            onClick={() => setIsProfileOpen(false)}
-                          >
-                            <FaUser className="text-blue-500" />
-                            <span>Profile</span>
-                          </Link>
-                          <Link
-                            to="/orders"
-                            className="flex items-center space-x-3 px-4 py-3 text-blue-800 hover:bg-blue-50 transition-colors duration-200 font-medium"
-                            onClick={() => setIsProfileOpen(false)}
-                          >
-                            <FaShoppingCart className="text-blue-500" />
-                            <span>Orders</span>
-                          </Link>
-                        </>
-                      )}
-                      <Link
-                        to="/messages"
-                        className="flex items-center space-x-3 px-4 py-3 text-blue-800 hover:bg-blue-50 transition-colors duration-200 font-medium"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        <span className="text-blue-500">💬</span>
-                        <span>Messages</span>
-                      </Link>
-                    </div>
-
-                    <div className="border-t border-blue-100 pt-2">
-                      <button
-                        onClick={() => {
-                          handleLogout();
-                          setIsProfileOpen(false);
-                        }}
-                        className="flex items-center space-x-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 transition-colors duration-200 font-medium"
-                      >
-                        <FaSignOutAlt />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Link
-                  to="/login"
-                  className="text-blue-800 hover:text-blue-600 transition-colors font-semibold text-lg"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="relative group overflow-hidden bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300 font-bold hover:scale-105"
-                >
-                  <span className="relative z-10">Get Started</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <button
-              onClick={toggleMenu}
-              className="relative p-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl hover:from-blue-100 hover:to-blue-200 transition-all duration-300 shadow-lg"
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? (
-                <FaTimes className="text-2xl text-blue-700" />
-              ) : (
-                <FaBars className="text-2xl text-blue-700" />
-              )}
-            </button>
+    <nav
+      className={`bg-white/95 backdrop-blur-lg shadow-xl border-r border-blue-100
+        h-screen fixed top-0 left-0 flex flex-col w-64 z-50
+        transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"}`}
+    >
+      {/* Logo */}
+      <Link
+        to="/"
+        className="flex items-center space-x-3 p-4 border-b border-blue-100 hover:bg-blue-50 transition-colors"
+      >
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-xl blur opacity-25"></div>
+          <div className="relative bg-gradient-to-r from-blue-500 to-blue-700 p-3 rounded-xl shadow-lg">
+            <FaSeedling className="text-white text-xl" />
           </div>
         </div>
+        <div>
+          <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-blue-900">
+            KrishiCart
+          </span>
+          <p className="text-xs text-blue-600 font-medium -mt-1">PREMIUM</p>
+        </div>
+      </Link>
 
-        {/* Epic Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden mt-6 pb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-            <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-6 shadow-xl border border-blue-100">
-              <div className="flex flex-col space-y-4">
-                {["Home", "Products", "Farmers", "About"].map((item) => (
-                  <Link
-                    key={item}
-                    to={item === "Home" ? "/" : `/${item.toLowerCase()}`}
-                    className="text-blue-800 hover:text-blue-600 transition-colors font-semibold text-lg py-2 border-b border-blue-100 last:border-b-0"
-                    onClick={toggleMenu}
-                  >
-                    {item}
-                  </Link>
-                ))}
+      {/* Nav Links */}
+      <div className="flex-1 overflow-y-auto">
+        <ul className="flex flex-col p-4 space-y-2">
+          {/* Main menu links */}
+          {getVisibleNavItems().map((item) => {
+            const IconComponent = item.icon;
+            const isActive = isActiveLink(item.path);
+            const isDisabled = item.requiresAuth && !isAuthenticated;
+            const hasNoAccess = item.requiresAuth && isAuthenticated && !canAccessFarmConnect() && item.name === "Farm Connect";
 
-                {isAuthenticated && user?.role === "consumer" && (
-                  <Link
-                    to="/checkout"
-                    className="flex items-center justify-between text-blue-800 hover:text-blue-600 transition-colors font-semibold text-lg py-2 border-b border-blue-100"
-                    onClick={toggleMenu}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <FaShoppingCart />
-                      <span>Shopping Cart</span>
-                    </div>
-                    {cartItems.length > 0 && (
-                      <span className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                        {cartItems.length}
-                      </span>
-                    )}
-                  </Link>
-                )}
+            // Handle Farm Connect click
+            const handleClick = (e) => {
+              if (item.name === "Farm Connect" && !isAuthenticated) {
+                e.preventDefault();
+                navigate("/login", { state: { from: "/farm-connect" } });
+                return;
+              }
+              if (hasNoAccess) {
+                e.preventDefault();
+                return;
+              }
+            };
 
-                {isAuthenticated ? (
-                  <div className="pt-4 border-t border-blue-200">
-                    <div className="bg-blue-100 rounded-xl p-4 mb-4">
-                      <p className="text-sm text-blue-600 font-medium">Signed in as</p>
-                      <p className="text-lg font-bold text-blue-800">{user?.name}</p>
-                      <span className="inline-block px-2 py-1 text-xs bg-blue-200 text-blue-700 rounded-full font-medium capitalize mt-1">
-                        {user?.role}
-                      </span>
-                    </div>
+            return (
+              <li key={item.name}>
+                <Link
+                  to={item.path}
+                  onClick={handleClick}
+                  className={`
+                    flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition-all duration-200 relative
+                    ${isActive
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
+                      : isDisabled || hasNoAccess
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-blue-800 hover:bg-blue-50 hover:scale-105'
+                    }
+                    ${item.isNew ? 'relative' : ''}
+                  `}
+                >
+                  <div className="flex items-center gap-2">
+                    <IconComponent className={`text-lg ${
+                      isActive ? 'text-white' :
+                      isDisabled || hasNoAccess ? 'text-gray-400' : 'text-blue-600'
+                    }`} />
 
-                    {user?.role === "admin" && (
-                      <Link
-                        to="/admin/dashboard"
-                        className="flex items-center space-x-3 text-blue-800 hover:text-blue-600 transition-colors font-medium py-2"
-                        onClick={toggleMenu}
-                      >
-                        <FaCrown className="text-yellow-500" />
-                        <span>Admin Dashboard</span>
-                      </Link>
+                    {/* Show lock icon for restricted access */}
+                    {(isDisabled || hasNoAccess) && item.name === "Farm Connect" && (
+                      <FaLock className="text-xs text-gray-400" />
                     )}
-                    {user?.role === "farmer" && (
-                      <Link
-                        to="/farmer/dashboard"
-                        className="flex items-center space-x-3 text-blue-800 hover:text-blue-600 transition-colors font-medium py-2"
-                        onClick={toggleMenu}
-                      >
-                        <FaSeedling className="text-green-500" />
-                        <span>Farmer Dashboard</span>
-                      </Link>
-                    )}
-                    {user?.role !== "admin" && (
-                      <>
-                        <Link
-                          to="/profile"
-                          className="flex items-center space-x-3 text-blue-800 hover:text-blue-600 transition-colors font-medium py-2"
-                          onClick={toggleMenu}
-                        >
-                          <FaUser className="text-blue-500" />
-                          <span>Profile</span>
-                        </Link>
-                        <Link
-                          to="/orders"
-                          className="flex items-center space-x-3 text-blue-800 hover:text-blue-600 transition-colors font-medium py-2"
-                          onClick={toggleMenu}
-                        >
-                          <FaShoppingCart className="text-blue-500" />
-                          <span>Orders</span>
-                        </Link>
-                      </>
-                    )}
-                    <Link
-                      to="/messages"
-                      className="flex items-center space-x-3 text-blue-800 hover:text-blue-600 transition-colors font-medium py-2"
-                      onClick={toggleMenu}
-                    >
-                      <span className="text-blue-500">💬</span>
-                      <span>Messages</span>
-                    </Link>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        toggleMenu();
-                      }}
-                      className="flex items-center space-x-3 text-red-600 hover:text-red-700 transition-colors font-medium py-2 mt-4 pt-4 border-t border-blue-200 w-full text-left"
-                    >
-                      <FaSignOutAlt />
-                      <span>Sign Out</span>
-                    </button>
                   </div>
-                ) : (
-                  <div className="flex flex-col space-y-3 pt-4 border-t border-blue-200">
-                    <Link
-                      to="/login"
-                      className="text-blue-800 hover:text-blue-600 transition-colors font-semibold text-lg py-2"
-                      onClick={toggleMenu}
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      to="/register"
-                      className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300 font-bold text-center"
-                      onClick={toggleMenu}
-                    >
-                      Get Started
-                    </Link>
-                  </div>
+
+                  <span>{item.name}</span>
+
+                  {/* Authentication required tooltip */}
+                  {item.name === "Farm Connect" && !isAuthenticated && (
+                    <div className="absolute left-full ml-2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      Login required
+                    </div>
+                  )}
+
+                  {/* Access denied tooltip */}
+                  {hasNoAccess && (
+                    <div className="absolute left-full ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      Farmers & Consumers only
+                    </div>
+                  )}
+
+                  {/* NEW badge for Farm Connect */}
+                  {item.isNew && (
+                    <span className="absolute -top-1 -right-1 bg-gradient-to-r from-green-400 to-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold animate-pulse shadow-lg">
+                      NEW
+                    </span>
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+
+          {/* Consumer Cart - Special styling */}
+          {isAuthenticated && isConsumer() && (
+            <li>
+              <Link
+                to="/checkout"
+                className={`
+                  flex items-center justify-between px-4 py-3 rounded-lg font-semibold transition-all duration-200
+                  ${isActiveLink('/checkout')
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
+                    : 'text-blue-800 hover:bg-blue-50 hover:scale-105'
+                  }
+                `}
+              >
+                <div className="flex items-center gap-3">
+                  <FaShoppingCart className={`text-lg ${isActiveLink('/checkout') ? 'text-white' : 'text-blue-600'}`} />
+                  <span>Cart</span>
+                </div>
+                {cartItems.length > 0 && (
+                  <span className="bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-bounce">
+                    {cartItems.length}
+                  </span>
                 )}
+              </Link>
+            </li>
+          )}
+        </ul>
+      </div>
+
+      {/* Profile / Auth */}
+      <div className="border-t border-blue-100 p-4">
+        {isAuthenticated ? (
+          <div>
+            <button
+              onClick={toggleProfile}
+              className="w-full flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            >
+              <div className="relative w-10 h-10 rounded-full bg-blue-800 flex items-center justify-center shadow-lg">
+                {isAdmin() && (
+                  <FaCrown className="absolute -top-1 -right-1 text-yellow-400 text-xs animate-pulse" />
+                )}
+                <span className="font-bold">{getUserInitials(user?.name)}</span>
               </div>
-            </div>
+              <div className="flex-1 text-left">
+                <span className="block truncate">{user?.name}</span>
+                <span className="text-xs text-blue-200 capitalize">
+                  {user?.role}
+                  {user?.role === 'consumer' && ' 🛒'}
+                  {user?.role === 'farmer' && ' 🌱'}
+                  {user?.role === 'admin' && ' 👑'}
+                </span>
+              </div>
+            </button>
+
+            {isProfileOpen && (
+              <div className="mt-3 space-y-2 bg-white rounded-lg shadow-lg border border-blue-100 p-2">
+                {isAdmin() && (
+                  <Link
+                    to="/admin/dashboard"
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-blue-50 rounded-lg text-blue-800 transition-colors"
+                  >
+                    <FaCrown className="text-yellow-500" />
+                    Admin Dashboard
+                  </Link>
+                )}
+                {isFarmer() && (
+                  <>
+                    <Link
+                      to="/farmer/dashboard"
+                      className="flex items-center gap-2 px-3 py-2 hover:bg-blue-50 rounded-lg text-blue-800 transition-colors"
+                    >
+                      <FaSeedling className="text-green-500" />
+                      Farmer Dashboard
+                    </Link>
+                    <Link
+                      to="/farmer/farm-connect"
+                      className="flex items-center gap-2 px-3 py-2 hover:bg-blue-50 rounded-lg text-blue-800 transition-colors"
+                    >
+                      <FaHandshake className="text-blue-500" />
+                      Farm Connect Pro
+                    </Link>
+                  </>
+                )}
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-blue-50 rounded-lg text-blue-800 transition-colors"
+                >
+                  👤 Profile
+                </Link>
+                <Link
+                  to="/orders"
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-blue-50 rounded-lg text-blue-800 transition-colors"
+                >
+                  📦 Orders
+                </Link>
+                <Link
+                  to="/messages"
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-blue-50 rounded-lg text-blue-800 transition-colors"
+                >
+                  💬 Messages
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-3 py-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"
+                >
+                  <FaSignOutAlt />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <Link
+              to="/login"
+              className="block px-4 py-3 text-blue-800 hover:bg-blue-50 rounded-lg font-semibold text-center transition-all duration-200 hover:scale-105"
+            >
+              🚀 Login
+            </Link>
+            <Link
+              to="/register"
+              className="block px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 font-semibold text-center shadow-lg transition-all duration-200 transform hover:scale-105"
+            >
+              ✨ Get Started
+            </Link>
           </div>
         )}
       </div>
+
+      {/* Mobile toggle button (optional) */}
+      <button
+        onClick={toggleMenu}
+        className="md:hidden fixed top-4 left-4 z-60 bg-blue-600 text-white p-2 rounded-lg shadow-lg"
+      >
+        ☰
+      </button>
     </nav>
   );
 };
