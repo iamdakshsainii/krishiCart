@@ -17,8 +17,25 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// CORS setup
+const allowedOrigins = [
+  "http://localhost:3000",          // your local frontend URL
+  "https://krishicart.vercel.app",  // your deployed frontend URL — replace with your real URL
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // allow non-browser tools like Postman
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true); // allowed origin
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -33,7 +50,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/categories", categoryRoutes);
 
-// ✅ ChatGPT Endpoint
+// ChatGPT Endpoint
 app.post("/api/chat", async (req, res) => {
   try {
     const { message } = req.body;
@@ -83,9 +100,7 @@ app.post("/api/chat", async (req, res) => {
     }
 
     const data = await response.json();
-    const reply =
-      data.choices?.[0]?.message?.content ||
-      "माफ करें, मुझे उत्तर नहीं मिला।";
+    const reply = data.choices?.[0]?.message?.content || "माफ करें, मुझे उत्तर नहीं मिला।";
 
     res.json({ reply });
   } catch (error) {
@@ -96,7 +111,7 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-// ✅ Serve Frontend in Production
+// Serve frontend in production
 if (process.env.NODE_ENV === "production") {
   const clientPath = path.join(__dirname, "../client/dist");
   app.use(express.static(clientPath));
@@ -106,7 +121,7 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// Default Route
+// Default route
 app.get("/", (req, res) => {
   res.send("KrishiCart API is running");
 });
