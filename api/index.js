@@ -17,8 +17,29 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// CORS whitelist - add your frontend URLs here
+const allowedOrigins = [
+  "https://krishi-cart-hqtxtz1zj-sainidaksh70-gmailcoms-projects.vercel.app",
+  "https://krishi-cart-chi.vercel.app",
+  "http://localhost:3000",
+];
+
+// CORS middleware with whitelist
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like Postman, curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true, // if you use cookies or auth headers
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -114,4 +135,4 @@ app.get("/", (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-}); 
+});
