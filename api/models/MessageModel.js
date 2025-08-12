@@ -16,6 +16,11 @@ const MessageSchema = new mongoose.Schema(
       type: String,
       required: [true, "Message content is required"],
     },
+    contentType: {
+      type: String,
+      enum: ["text", "image", "file"],
+      default: "text",
+    },
     relatedOrder: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order",
@@ -23,6 +28,11 @@ const MessageSchema = new mongoose.Schema(
     isRead: {
       type: Boolean,
       default: false,
+    },
+    status: {
+      type: String,
+      enum: ["sent", "delivered", "read"],
+      default: "sent",
     },
   },
   {

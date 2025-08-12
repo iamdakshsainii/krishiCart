@@ -28,7 +28,6 @@ const Navbar = () => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.cart);
 
-  // Use permissions hook
   const { canAccessFarmConnect, isFarmer, isConsumer, isAdmin } = usePermissions();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -41,73 +40,43 @@ const Navbar = () => {
 
   const getUserInitials = (name) => {
     if (!name) return "U";
-    return name.split(" ").map((n) => n[0]).join("").toUpperCase();
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
-  // Check if current path is active
   const isActiveLink = (path) => {
     if (path === "/" && location.pathname === "/") return true;
     if (path !== "/" && location.pathname.startsWith(path)) return true;
     return false;
   };
 
-  // Navigation items with icons and access control
   const navItems = [
-    {
-      name: "Home",
-      path: "/",
-      icon: FaHome,
-      public: true
-    },
-    {
-      name: "Products",
-      path: "/products",
-      icon: FaShoppingBasket,
-      public: true
-    },
-    {
-      name: "Farmers",
-      path: "/farmers",
-      icon: FaUsers,
-      public: true
-    },
+    { name: "Home", path: "/", icon: FaHome, public: true },
+    { name: "Products", path: "/products", icon: FaShoppingBasket, public: true },
+    { name: "Farmers", path: "/farmers", icon: FaUsers, public: true },
     {
       name: "Farm Connect",
       path: "/farm-connect",
       icon: FaHandshake,
       isNew: true,
       requiresAuth: true,
-      allowedRoles: ['farmer', 'consumer'],
-      lockIcon: !canAccessFarmConnect()
+      allowedRoles: ["farmer", "consumer"],
+      lockIcon: !canAccessFarmConnect(),
     },
-    {
-      name: "Weather",
-      path: "/weather",
-      icon: FaCloud,
-      public: true
-    },
-    {
-      name: "About",
-      path: "/about",
-      icon: FaInfoCircle,
-      public: true
-    },
+    { name: "Weather", path: "/weather", icon: FaCloud, public: true },
+    { name: "About", path: "/about", icon: FaInfoCircle, public: true },
   ];
 
-  // Filter navigation items based on access
   const getVisibleNavItems = () => {
-    return navItems.filter(item => {
-      // Show public items to everyone
+    return navItems.filter((item) => {
       if (item.public) return true;
-
-      // Show protected items only to authenticated users
-      if (item.requiresAuth && !isAuthenticated) return true; // Show but disable
-
-      // Check specific role requirements
+      if (item.requiresAuth && !isAuthenticated) return true;
       if (item.allowedRoles && isAuthenticated) {
         return item.allowedRoles.includes(user?.role);
       }
-
       return true;
     });
   };
@@ -137,27 +106,26 @@ const Navbar = () => {
         </div>
       </Link>
 
-      {/* Nav Links */}
+      {/* Menu Items */}
       <div className="flex-1 overflow-y-auto">
         <ul className="flex flex-col p-4 space-y-2">
-          {/* Main menu links */}
           {getVisibleNavItems().map((item) => {
             const IconComponent = item.icon;
             const isActive = isActiveLink(item.path);
             const isDisabled = item.requiresAuth && !isAuthenticated;
-            const hasNoAccess = item.requiresAuth && isAuthenticated && !canAccessFarmConnect() && item.name === "Farm Connect";
+            const hasNoAccess =
+              item.requiresAuth &&
+              isAuthenticated &&
+              !canAccessFarmConnect() &&
+              item.name === "Farm Connect";
 
-            // Handle Farm Connect click
             const handleClick = (e) => {
               if (item.name === "Farm Connect" && !isAuthenticated) {
                 e.preventDefault();
                 navigate("/login", { state: { from: "/farm-connect" } });
                 return;
               }
-              if (hasNoAccess) {
-                e.preventDefault();
-                return;
-              }
+              if (hasNoAccess) e.preventDefault();
             };
 
             return (
@@ -168,43 +136,28 @@ const Navbar = () => {
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition-all duration-200 relative
                     ${isActive
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
+                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105"
                       : isDisabled || hasNoAccess
-                      ? 'text-gray-400 cursor-not-allowed'
-                      : 'text-blue-800 hover:bg-blue-50 hover:scale-105'
+                      ? "text-gray-400 cursor-not-allowed"
+                      : "text-blue-800 hover:bg-blue-50 hover:scale-105"
                     }
-                    ${item.isNew ? 'relative' : ''}
                   `}
                 >
                   <div className="flex items-center gap-2">
-                    <IconComponent className={`text-lg ${
-                      isActive ? 'text-white' :
-                      isDisabled || hasNoAccess ? 'text-gray-400' : 'text-blue-600'
-                    }`} />
-
-                    {/* Show lock icon for restricted access */}
+                    <IconComponent
+                      className={`text-lg ${
+                        isActive
+                          ? "text-white"
+                          : isDisabled || hasNoAccess
+                          ? "text-gray-400"
+                          : "text-blue-600"
+                      }`}
+                    />
                     {(isDisabled || hasNoAccess) && item.name === "Farm Connect" && (
                       <FaLock className="text-xs text-gray-400" />
                     )}
                   </div>
-
                   <span>{item.name}</span>
-
-                  {/* Authentication required tooltip */}
-                  {item.name === "Farm Connect" && !isAuthenticated && (
-                    <div className="absolute left-full ml-2 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                      Login required
-                    </div>
-                  )}
-
-                  {/* Access denied tooltip */}
-                  {hasNoAccess && (
-                    <div className="absolute left-full ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                      Farmers & Consumers only
-                    </div>
-                  )}
-
-                  {/* NEW badge for Farm Connect */}
                   {item.isNew && (
                     <span className="absolute -top-1 -right-1 bg-gradient-to-r from-green-400 to-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold animate-pulse shadow-lg">
                       NEW
@@ -215,21 +168,25 @@ const Navbar = () => {
             );
           })}
 
-          {/* Consumer Cart - Special styling */}
+          {/* Consumer Cart */}
           {isAuthenticated && isConsumer() && (
             <li>
               <Link
                 to="/checkout"
                 className={`
                   flex items-center justify-between px-4 py-3 rounded-lg font-semibold transition-all duration-200
-                  ${isActiveLink('/checkout')
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
-                    : 'text-blue-800 hover:bg-blue-50 hover:scale-105'
+                  ${isActiveLink("/checkout")
+                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105"
+                    : "text-blue-800 hover:bg-blue-50 hover:scale-105"
                   }
                 `}
               >
                 <div className="flex items-center gap-3">
-                  <FaShoppingCart className={`text-lg ${isActiveLink('/checkout') ? 'text-white' : 'text-blue-600'}`} />
+                  <FaShoppingCart
+                    className={`text-lg ${
+                      isActiveLink("/checkout") ? "text-white" : "text-blue-600"
+                    }`}
+                  />
                   <span>Cart</span>
                 </div>
                 {cartItems.length > 0 && (
@@ -243,7 +200,7 @@ const Navbar = () => {
         </ul>
       </div>
 
-      {/* Profile / Auth */}
+      {/* Profile */}
       <div className="border-t border-blue-100 p-4">
         {isAuthenticated ? (
           <div>
@@ -261,13 +218,12 @@ const Navbar = () => {
                 <span className="block truncate">{user?.name}</span>
                 <span className="text-xs text-blue-200 capitalize">
                   {user?.role}
-                  {user?.role === 'consumer' && ' 🛒'}
-                  {user?.role === 'farmer' && ' 🌱'}
-                  {user?.role === 'admin' && ' 👑'}
+                  {user?.role === "consumer" && " 🛒"}
+                  {user?.role === "farmer" && " 🌱"}
+                  {user?.role === "admin" && " 👑"}
                 </span>
               </div>
             </button>
-
             {isProfileOpen && (
               <div className="mt-3 space-y-2 bg-white rounded-lg shadow-lg border border-blue-100 p-2">
                 {isAdmin() && (
@@ -343,7 +299,7 @@ const Navbar = () => {
         )}
       </div>
 
-      {/* Mobile toggle button (optional) */}
+      {/* Mobile toggle */}
       <button
         onClick={toggleMenu}
         className="md:hidden fixed top-4 left-4 z-60 bg-blue-600 text-white p-2 rounded-lg shadow-lg"

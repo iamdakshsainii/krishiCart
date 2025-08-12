@@ -5,23 +5,30 @@ import Loader from "./Loader";
 
 /**
  * Hook to check authentication and role-based permissions.
- * This version includes isFarmer(), isConsumer(), isAdmin() for Navbar compatibility.
+ * Includes isFarmer(), isConsumer(), isAdmin() for Navbar compatibility.
  */
 export const usePermissions = () => {
   const { user, isAuthenticated, loading } = useSelector(
     (state) => state.auth || {}
   );
 
-  // Access logic
+  // ✅ Access logic — allow both farmers and consumers
   const canAccessFarmConnect = () =>
-    user?.role === "farmer" || user?.role === "customer";
+    isAuthenticated &&
+    (user?.role === "farmer" || user?.role === "consumer");
 
-  const canCreateContent = () => user?.role === "farmer";
-  const canInteractWithContent = () => isAuthenticated;
+  // ✅ Match FarmConnectionPage naming (farmers can create)
+  const canCreate = () =>
+    isAuthenticated && user?.role === "farmer";
 
-  // ✅ Role functions for Navbar.jsx
+  // ✅ Match FarmConnectionPage naming (farmers & consumers can interact)
+  const canInteract = () =>
+    isAuthenticated &&
+    (user?.role === "farmer" || user?.role === "consumer");
+
+  // ✅ Role helpers for Navbar
   const isFarmer = () => user?.role === "farmer";
-  const isConsumer = () => user?.role === "customer";
+  const isConsumer = () => user?.role === "consumer";
   const isAdmin = () => user?.role === "admin";
 
   return {
@@ -29,8 +36,8 @@ export const usePermissions = () => {
     isAuthenticated,
     loading,
     canAccessFarmConnect,
-    canCreateContent,
-    canInteractWithContent,
+    canCreate,
+    canInteract,
     isFarmer,
     isConsumer,
     isAdmin
@@ -51,17 +58,17 @@ const PrivateRoute = ({ roles }) => {
     return <Loader />;
   }
 
-  // If admin is logged in — redirect to admin dashboard
+  // Redirect admin users to admin dashboard
   if (isAuthenticated && user?.role === "admin") {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
-  // Role-based route restriction
+  // Role-based restriction
   if (roles && roles.length > 0 && !roles.includes(user?.role)) {
     return <Navigate to="/" replace />;
   }
 
-  // Authenticated → render nested route content
+  // Authenticated → render the child route
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 

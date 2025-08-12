@@ -1,12 +1,11 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getFarmerProfile,
   clearFarmerProfile,
-} from "../redux/slices/farmerSlice";
+} from "../redux/slices/farmConnectSlice";
 import { getProducts } from "../redux/slices/productSlice";
 import { sendMessage } from "../redux/slices/messageSlice";
 import ProductCard from "../components/ProductCard";
@@ -17,9 +16,6 @@ import {
   FaPhone,
   FaEnvelope,
   FaCalendarAlt,
-  FaFacebook,
-  FaInstagram,
-  FaTwitter,
   FaArrowLeft,
   FaComment,
   FaStar,
@@ -47,7 +43,6 @@ const FarmerDetailPage = () => {
   useEffect(() => {
     dispatch(getFarmerProfile(id));
     dispatch(getProducts({ farmer: id }));
-
     return () => {
       dispatch(clearFarmerProfile());
     };
@@ -55,21 +50,15 @@ const FarmerDetailPage = () => {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-
     if (!isAuthenticated) {
       navigate("/login");
       return;
     }
-
     if (!message.trim()) return;
-
-    dispatch(
-      sendMessage({
-        receiver: id,
-        content: message,
-      })
-    );
-
+    dispatch(sendMessage({
+      receiver: id,
+      content: message,
+    }));
     setMessage("");
     setShowMessageForm(false);
   };
@@ -104,6 +93,7 @@ const FarmerDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 pb-20">
+
       {/* Back Button */}
       <div className="container mx-auto px-6 pt-6">
         <Link
@@ -120,13 +110,11 @@ const FarmerDetailPage = () => {
       {/* Hero Section */}
       <section className="container mx-auto bg-white/80 backdrop-blur-lg border border-blue-100 rounded-3xl shadow-lg overflow-hidden px-8 py-6 max-w-7xl">
         <div className="relative h-48 rounded-t-3xl bg-gradient-to-r from-blue-600 to-blue-800 mb-24">
-          {/* subtle blurred shapes */}
           <div className="absolute inset-0">
             <div className="absolute top-8 left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
             <div className="absolute bottom-8 right-24 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl" />
           </div>
         </div>
-
         <div className="flex flex-col lg:flex-row items-start lg:items-center -mt-36 gap-8">
           {/* Avatar */}
           <div className="relative flex-shrink-0">
@@ -143,7 +131,6 @@ const FarmerDetailPage = () => {
             <h1 className="text-5xl font-extrabold text-gray-900 mb-2">
               {profile?.farmName || farmer.name}
             </h1>
-
             <div className="flex flex-wrap items-center gap-6 text-gray-700 mb-8">
               {/* Rating */}
               <div className="flex items-center gap-2">
@@ -154,14 +141,10 @@ const FarmerDetailPage = () => {
                 </div>
                 <span className="font-medium">4.9 (127 reviews)</span>
               </div>
-
-              {/* Verified Badge */}
               <div className="bg-blue-100 rounded-full px-4 py-1 text-blue-700 font-semibold">
                 Verified
               </div>
             </div>
-
-            {/* Location & Established */}
             <div className="flex flex-wrap gap-6 text-blue-700 text-base font-medium">
               {farmer.address && (
                 <div className="flex items-center gap-2">
@@ -178,8 +161,6 @@ const FarmerDetailPage = () => {
                 </div>
               )}
             </div>
-
-            {/* Actions */}
             <div className="mt-10 flex flex-wrap gap-5">
               <button className="flex items-center gap-3 bg-pink-500 hover:bg-pink-600 text-white rounded-xl px-6 py-3 font-bold shadow-lg transition-transform hover:scale-105">
                 <FaHeart /> Follow
@@ -192,8 +173,8 @@ const FarmerDetailPage = () => {
         </div>
       </section>
 
-      {/* Navigation Tabs */}
-      <nav className="sticky top-24 bg-white border-y border-blue-100 backdrop-blur-sm z-40 shadow-sm">
+      {/* Static Navigation Tabs */}
+      <nav className="bg-white border-y border-blue-100 backdrop-blur-sm shadow-sm">
         <div className="container mx-auto px-6">
           <ul className="flex gap-8 text-blue-700 text-lg font-semibold overflow-x-auto no-scrollbar py-3">
             {[
@@ -220,15 +201,13 @@ const FarmerDetailPage = () => {
         </div>
       </nav>
 
-      {/* Content Sections */}
+      {/* Content */}
       <div className="container mx-auto px-6 py-12 max-w-7xl">
-        {/* Products tab */}
         {activeTab === "products" && (
           <>
             <h2 className="text-4xl font-extrabold text-gray-900 mb-10 text-center max-w-3xl mx-auto">
               Available Products
             </h2>
-
             {products.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {products.map((product) => (
@@ -251,13 +230,11 @@ const FarmerDetailPage = () => {
           </>
         )}
 
-        {/* Reviews tab */}
         {activeTab === "reviews" && (
           <>
             <h2 className="text-4xl font-extrabold text-gray-900 mb-10 text-center max-w-3xl mx-auto">
               Customer Reviews
             </h2>
-
             <div className="flex justify-center mb-10">
               <div className="flex items-center gap-4">
                 <div className="flex text-yellow-400 text-2xl">
@@ -269,15 +246,13 @@ const FarmerDetailPage = () => {
                 <span className="text-gray-700">based on 127 reviews</span>
               </div>
             </div>
-
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
                 {
                   name: "Sarah Johnson",
                   rating: 5,
                   date: "2 weeks ago",
-                  comment:
-                    "Amazing fresh vegetables! The quality is outstanding.",
+                  comment: "Amazing fresh vegetables! The quality is outstanding.",
                 },
                 {
                   name: "Mike Chen",
@@ -321,13 +296,11 @@ const FarmerDetailPage = () => {
           </>
         )}
 
-        {/* Contact tab */}
         {activeTab === "contact" && (
           <>
             <h2 className="text-4xl font-extrabold text-gray-900 mb-10 text-center max-w-3xl mx-auto">
               Contact the Farmer
             </h2>
-
             <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
               {isAuthenticated && user?.role !== "farmer" ? (
                 <div className="bg-white rounded-3xl shadow-lg p-8 border border-blue-100">
@@ -345,8 +318,6 @@ const FarmerDetailPage = () => {
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         required
-                        aria-required="true"
-                        aria-label="Message textarea"
                       />
                       <div className="flex gap-4">
                         <button
@@ -369,7 +340,6 @@ const FarmerDetailPage = () => {
                       <button
                         onClick={() => setShowMessageForm(true)}
                         className="inline-flex items-center gap-4 bg-blue-50 text-blue-700 rounded-xl px-6 py-4 font-semibold shadow-lg hover:bg-blue-100 transition"
-                        aria-label="Show message form"
                       >
                         <FaComment className="text-2xl" />
                         Message Farmer
@@ -393,7 +363,6 @@ const FarmerDetailPage = () => {
                     </div>
                   </div>
                 )}
-
                 <div className="flex items-center gap-6 bg-blue-50 rounded-xl p-6 shadow border border-blue-100">
                   <FaEnvelope className="text-blue-700 w-12 h-12" />
                   <div>
@@ -401,7 +370,6 @@ const FarmerDetailPage = () => {
                     <p className="text-blue-700">{farmer.email}</p>
                   </div>
                 </div>
-
                 {farmer.address && (
                   <div className="flex items-center gap-6 bg-blue-50 rounded-xl p-6 shadow border border-blue-100">
                     <FaMapMarkerAlt className="text-blue-700 w-12 h-12" />
