@@ -123,7 +123,7 @@ const RegisterPage = () => {
               Join our community of farmers and consumers
             </p>
             <div className="mt-4">
-              <span className="text-sm text-gray-500">Already have an account? </span>
+              <span className="text-sm text-gray-500">Already have an account ? </span>
               <Link
                 to="/login"
                 className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
