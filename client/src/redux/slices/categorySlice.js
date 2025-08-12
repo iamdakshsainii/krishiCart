@@ -13,9 +13,7 @@ export const getCategories = createAsyncThunk(
       return data;
     } catch (error) {
       const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+        error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -43,9 +41,7 @@ export const createCategory = createAsyncThunk(
       return data;
     } catch (error) {
       const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+        error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -73,9 +69,7 @@ export const updateCategory = createAsyncThunk(
       return data;
     } catch (error) {
       const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+        error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -98,9 +92,7 @@ export const deleteCategory = createAsyncThunk(
       return id;
     } catch (error) {
       const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+        error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -197,7 +189,6 @@ const categorySlice = createSlice({
   },
 });
 
-export const { clearCategoryError, resetCategorySuccess } =
-  categorySlice.actions;
+export const { clearCategoryError, resetCategorySuccess } = categorySlice.actions;
 
 export default categorySlice.reducer;

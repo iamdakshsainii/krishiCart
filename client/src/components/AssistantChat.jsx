@@ -2,12 +2,14 @@ import React, { useState } from "react";
 
 const AssistantChat = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState([
-    { from: "assistant", text: "नमस्ते! खेती से जुड़ा कोई भी सवाल पूछें।" }
+    { from: "assistant", text: "नमस्ते! खेती से जुड़ा कोई भी सवाल पूछें।" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
+
+  const API_URL = import.meta.env.VITE_API_URL; // Your deployed backend URL from env
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -16,7 +18,7 @@ const AssistantChat = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}/api/chat`, {
+      const res = await fetch(`${API_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input }),
@@ -25,13 +27,19 @@ const AssistantChat = ({ isOpen, onClose }) => {
       if (res.status === 429) {
         setMessages((msgs) => [
           ...msgs,
-          { from: "assistant", text: "आपका AI सहायक सीमा तक पहुंच गया है। कृपया कुछ समय बाद पुनः प्रयास करें।" },
+          {
+            from: "assistant",
+            text: "आपका AI सहायक सीमा तक पहुंच गया है। कृपया कुछ समय बाद पुनः प्रयास करें।",
+          },
         ]);
       } else if (!res.ok) {
         const errorData = await res.json();
         setMessages((msgs) => [
           ...msgs,
-          { from: "assistant", text: errorData.error || "त्रुटि हुई। कृपया पुनः प्रयास करें।" },
+          {
+            from: "assistant",
+            text: errorData.error || "त्रुटि हुई। कृपया पुनः प्रयास करें।",
+          },
         ]);
       } else {
         const data = await res.json();
@@ -53,13 +61,18 @@ const AssistantChat = ({ isOpen, onClose }) => {
       {/* Header */}
       <div className="p-3 font-bold text-blue-700 border-b flex justify-between">
         खेती सहायक
-        <button onClick={onClose} className="text-red-500">✖</button>
+        <button onClick={onClose} className="text-red-500">
+          ✖
+        </button>
       </div>
 
       {/* Messages */}
       <div className="flex-1 p-4 overflow-y-auto" style={{ maxHeight: "300px" }}>
         {messages.map((m, i) => (
-          <div key={i} className={m.from === "assistant" ? "text-green-700 mb-2" : "text-gray-800 mb-2"}>
+          <div
+            key={i}
+            className={m.from === "assistant" ? "text-green-700 mb-2" : "text-gray-800 mb-2"}
+          >
             {m.text}
           </div>
         ))}

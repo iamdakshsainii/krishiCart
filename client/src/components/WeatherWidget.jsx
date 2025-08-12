@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { FaCloudSun, FaSun, FaCloud, FaCloudRain, FaSnowflake, FaSearch, FaMapMarkerAlt, FaEye, FaWind } from "react-icons/fa";
+import {
+  FaCloudSun,
+  FaSun,
+  FaCloud,
+  FaCloudRain,
+  FaSnowflake,
+  FaSearch,
+  FaMapMarkerAlt,
+  FaEye,
+  FaWind,
+} from "react-icons/fa";
 
 const WeatherWidget = () => {
   const [data, setData] = useState(null);
@@ -7,7 +17,10 @@ const WeatherWidget = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Get weather icon based on condition
+  // Your deployed backend URL from environment variable
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  // Weather icon selector
   const getWeatherIcon = (weatherMain, weatherId) => {
     const iconClass = "text-4xl";
 
@@ -28,7 +41,7 @@ const WeatherWidget = () => {
     return <FaCloudSun className={`${iconClass} text-blue-400`} />;
   };
 
-  // Get background gradient based on weather
+  // Background gradient based on weather condition
   const getBackgroundGradient = (weatherId) => {
     if (weatherId >= 200 && weatherId < 600) {
       return "from-gray-400 to-gray-600"; // Rainy
@@ -47,7 +60,9 @@ const WeatherWidget = () => {
       setLoading(true);
       setError("");
 
-      const res = await fetch(`http://localhost:5000/api/weather?city=${city}`);
+      // Using deployed backend URL from env
+      const res = await fetch(`${API_URL}/api/weather?city=${city}`);
+
       if (!res.ok) {
         const errData = await res.json();
         console.error("Weather API error:", errData);
@@ -65,7 +80,7 @@ const WeatherWidget = () => {
     }
   };
 
-  // Auto-fetch weather on component mount
+  // Fetch weather on mount
   useEffect(() => {
     fetchWeather();
   }, []);
@@ -130,7 +145,9 @@ const WeatherWidget = () => {
             <div className="text-center py-8">
               <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                 <p className="text-red-600 font-semibold">{error}</p>
-                <p className="text-red-500 text-sm mt-1">Please check the city name and try again</p>
+                <p className="text-red-500 text-sm mt-1">
+                  Please check the city name and try again
+                </p>
               </div>
             </div>
           )}
@@ -138,13 +155,19 @@ const WeatherWidget = () => {
           {data && !error && (
             <div className="space-y-6">
               {/* Main Weather Card */}
-              <div className={`bg-gradient-to-r ${getBackgroundGradient(data.weather[0].id)} rounded-xl p-6 text-white`}>
+              <div
+                className={`bg-gradient-to-r ${getBackgroundGradient(
+                  data.weather[0].id
+                )} rounded-xl p-6 text-white`}
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                   {/* Left Side - Main Info */}
                   <div className="text-center md:text-left">
                     <div className="flex items-center justify-center md:justify-start gap-3 mb-3">
                       <FaMapMarkerAlt className="text-xl" />
-                      <h3 className="text-2xl font-bold">{data.name}, {data.sys.country}</h3>
+                      <h3 className="text-2xl font-bold">
+                        {data.name}, {data.sys.country}
+                      </h3>
                     </div>
                     <div className="text-5xl font-bold mb-2">
                       {Math.round(data.main.temp)}°C
@@ -171,20 +194,26 @@ const WeatherWidget = () => {
                 <div className="bg-blue-50 rounded-lg p-4 text-center">
                   <div className="text-blue-600 text-2xl mb-2">💧</div>
                   <div className="text-sm text-gray-600">Humidity</div>
-                  <div className="text-lg font-bold text-gray-800">{data.main.humidity}%</div>
+                  <div className="text-lg font-bold text-gray-800">
+                    {data.main.humidity}%
+                  </div>
                 </div>
 
                 <div className="bg-blue-50 rounded-lg p-4 text-center">
                   <div className="text-blue-600 text-2xl mb-2">🌡️</div>
                   <div className="text-sm text-gray-600">Pressure</div>
-                  <div className="text-lg font-bold text-gray-800">{data.main.pressure} hPa</div>
+                  <div className="text-lg font-bold text-gray-800">
+                    {data.main.pressure} hPa
+                  </div>
                 </div>
 
                 {data.visibility && (
                   <div className="bg-blue-50 rounded-lg p-4 text-center">
                     <FaEye className="text-blue-600 text-2xl mx-auto mb-2" />
                     <div className="text-sm text-gray-600">Visibility</div>
-                    <div className="text-lg font-bold text-gray-800">{(data.visibility / 1000).toFixed(1)} km</div>
+                    <div className="text-lg font-bold text-gray-800">
+                      {(data.visibility / 1000).toFixed(1)} km
+                    </div>
                   </div>
                 )}
 
@@ -192,7 +221,9 @@ const WeatherWidget = () => {
                   <div className="bg-blue-50 rounded-lg p-4 text-center">
                     <FaWind className="text-blue-600 text-2xl mx-auto mb-2" />
                     <div className="text-sm text-gray-600">Wind Speed</div>
-                    <div className="text-lg font-bold text-gray-800">{data.wind.speed} m/s</div>
+                    <div className="text-lg font-bold text-gray-800">
+                      {data.wind.speed} m/s
+                    </div>
                   </div>
                 )}
               </div>
@@ -202,12 +233,16 @@ const WeatherWidget = () => {
                 <div className="flex justify-between items-center">
                   <div className="text-center">
                     <div className="text-sm text-gray-600">Min Temperature</div>
-                    <div className="text-xl font-bold text-blue-800">{Math.round(data.main.temp_min)}°C</div>
+                    <div className="text-xl font-bold text-blue-800">
+                      {Math.round(data.main.temp_min)}°C
+                    </div>
                   </div>
                   <div className="h-12 w-px bg-blue-300"></div>
                   <div className="text-center">
                     <div className="text-sm text-gray-600">Max Temperature</div>
-                    <div className="text-xl font-bold text-blue-800">{Math.round(data.main.temp_max)}°C</div>
+                    <div className="text-xl font-bold text-blue-800">
+                      {Math.round(data.main.temp_max)}°C
+                    </div>
                   </div>
                 </div>
               </div>

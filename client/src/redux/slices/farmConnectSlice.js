@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// -------------------- HELPER FUNCTIONS --------------------
+// Helper to validate user role
 const validateUserRole = (getState, requiredRole) => {
   const { auth } = getState();
   if (!auth.isAuthenticated || !auth.user) {
@@ -17,9 +17,8 @@ const validateUserRole = (getState, requiredRole) => {
   return auth.user;
 };
 
-// -------------------- THUNKS --------------------
+// Thunks
 
-// Fetch Posts
 export const fetchPosts = createAsyncThunk(
   'farmConnect/fetchPosts',
   async (_, { rejectWithValue, getState }) => {
@@ -34,7 +33,6 @@ export const fetchPosts = createAsyncThunk(
   }
 );
 
-// Fetch Stories
 export const fetchStories = createAsyncThunk(
   'farmConnect/fetchStories',
   async (_, { rejectWithValue, getState }) => {
@@ -49,7 +47,6 @@ export const fetchStories = createAsyncThunk(
   }
 );
 
-// Fetch a single Farmer profile
 export const getFarmerProfile = createAsyncThunk(
   'farmConnect/getFarmerProfile',
   async (farmerId, { rejectWithValue, getState }) => {
@@ -66,14 +63,11 @@ export const getFarmerProfile = createAsyncThunk(
   }
 );
 
-// Create Post (Farmers Only)
 export const createPost = createAsyncThunk(
   'farmConnect/createPost',
   async (formData, { rejectWithValue, getState }) => {
     try {
-      // ✅ Role validation - only farmers can create posts
       validateUserRole(getState(), 'farmer');
-
       const token = getState().auth.token;
       const config = {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
@@ -89,14 +83,11 @@ export const createPost = createAsyncThunk(
   }
 );
 
-// Create Story (Farmers Only)
 export const createStory = createAsyncThunk(
   'farmConnect/createStory',
   async (formData, { rejectWithValue, getState }) => {
     try {
-      // ✅ Role validation - only farmers can create stories
       validateUserRole(getState(), 'farmer');
-
       const token = getState().auth.token;
       const config = {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
@@ -112,17 +103,14 @@ export const createStory = createAsyncThunk(
   }
 );
 
-// Like Post (Farmers & Consumers)
 export const likePost = createAsyncThunk(
   'farmConnect/likePost',
   async (postId, { rejectWithValue, getState }) => {
     try {
-      // ✅ Role validation - farmers and consumers can like
       const user = validateUserRole(getState());
       if (!['farmer', 'consumer'].includes(user.role)) {
         throw new Error('Only farmers and consumers can like posts');
       }
-
       const token = getState().auth.token;
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const { data } = await axios.post(`${API_URL}/farm-connect/posts/${postId}/like`, {}, config);
@@ -135,17 +123,14 @@ export const likePost = createAsyncThunk(
   }
 );
 
-// Like Story (Farmers & Consumers)
 export const likeStory = createAsyncThunk(
   'farmConnect/likeStory',
   async (storyId, { rejectWithValue, getState }) => {
     try {
-      // ✅ Role validation - farmers and consumers can like
       const user = validateUserRole(getState());
       if (!['farmer', 'consumer'].includes(user.role)) {
         throw new Error('Only farmers and consumers can like stories');
       }
-
       const token = getState().auth.token;
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const { data } = await axios.post(`${API_URL}/farm-connect/stories/${storyId}/like`, {}, config);
@@ -158,26 +143,19 @@ export const likeStory = createAsyncThunk(
   }
 );
 
-// Add Comment (Farmers & Consumers)
 export const addComment = createAsyncThunk(
   'farmConnect/addComment',
   async ({ postId, content }, { rejectWithValue, getState }) => {
     try {
-      // ✅ Role validation - farmers and consumers can comment
       const user = validateUserRole(getState());
       if (!['farmer', 'consumer'].includes(user.role)) {
         throw new Error('Only farmers and consumers can comment');
       }
-
       const token = getState().auth.token;
       const config = {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       };
-      const { data } = await axios.post(
-        `${API_URL}/farm-connect/posts/${postId}/comments`,
-        { content },
-        config
-      );
+      const { data } = await axios.post(`${API_URL}/farm-connect/posts/${postId}/comments`, { content }, config);
       toast.success('Comment added successfully!');
       return { postId, comment: data.data || data };
     } catch (error) {
@@ -188,17 +166,14 @@ export const addComment = createAsyncThunk(
   }
 );
 
-// Share Post (Farmers & Consumers)
 export const sharePost = createAsyncThunk(
   'farmConnect/sharePost',
   async (postId, { rejectWithValue, getState }) => {
     try {
-      // ✅ Role validation - farmers and consumers can share
       const user = validateUserRole(getState());
       if (!['farmer', 'consumer'].includes(user.role)) {
         throw new Error('Only farmers and consumers can share posts');
       }
-
       const token = getState().auth.token;
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const { data } = await axios.post(`${API_URL}/farm-connect/posts/${postId}/share`, {}, config);
@@ -212,7 +187,7 @@ export const sharePost = createAsyncThunk(
   }
 );
 
-// -------------------- SLICE --------------------
+// Slice
 
 const initialState = {
   posts: [],
@@ -233,7 +208,6 @@ const initialState = {
   searchQuery: '',
   selectedCategory: 'all',
   sortBy: 'newest',
-  // ✅ User interaction stats
   userStats: {
     totalPosts: 0,
     totalStories: 0,
@@ -259,7 +233,6 @@ const farmConnectSlice = createSlice({
     setSelectedCategory: (state, action) => { state.selectedCategory = action.payload; },
     setSortBy: (state, action) => { state.sortBy = action.payload; },
     clearError: (state) => { state.error = null; },
-    // ✅ Update user stats
     updateUserStats: (state, action) => {
       state.userStats = { ...state.userStats, ...action.payload };
     },
@@ -305,7 +278,6 @@ const farmConnectSlice = createSlice({
         state.createLoading = false;
         state.posts.unshift(action.payload);
         state.showCreatePostModal = false;
-        // ✅ Update user stats
         state.userStats.totalPosts += 1;
       })
       .addCase(createPost.rejected, (state, action) => {
@@ -318,7 +290,6 @@ const farmConnectSlice = createSlice({
         state.createLoading = false;
         state.stories.unshift(action.payload);
         state.showCreateStoryModal = false;
-        // ✅ Update user stats
         state.userStats.totalStories += 1;
       })
       .addCase(createStory.rejected, (state, action) => {
@@ -326,7 +297,6 @@ const farmConnectSlice = createSlice({
         state.error = action.payload;
       })
 
-      // ✅ Handle like/comment/share with stats updates
       .addCase(likePost.fulfilled, (state, action) => {
         const post = state.posts.find(p => (p.id || p._id) === action.payload.postId);
         if (post) {
@@ -366,7 +336,7 @@ export const {
   setActiveTab,
   setCurrentUser,
   setFarmerProfile,
-  clearFarmerProfile,           // ← This was missing!
+  clearFarmerProfile,
   setShowCreatePostModal,
   setShowCreateStoryModal,
   setSelectedPost,
@@ -378,5 +348,4 @@ export const {
   updateUserStats
 } = farmConnectSlice.actions;
 
-// Default reducer export
 export default farmConnectSlice.reducer;

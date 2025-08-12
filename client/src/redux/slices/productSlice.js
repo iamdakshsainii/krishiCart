@@ -13,9 +13,7 @@ export const getProducts = createAsyncThunk(
       if (Object.keys(params).length > 0) {
         const queryParams = new URLSearchParams();
         for (const key in params) {
-          if (params[key]) {
-            queryParams.append(key, params[key]);
-          }
+          if (params[key]) queryParams.append(key, params[key]);
         }
         url += `?${queryParams.toString()}`;
       }
@@ -23,10 +21,7 @@ export const getProducts = createAsyncThunk(
       const { data } = await axios.get(url);
       return data;
     } catch (error) {
-      const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+      const message = error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -39,10 +34,7 @@ export const getProductDetails = createAsyncThunk(
       const { data } = await axios.get(`${API_URL}/products/${id}`);
       return data;
     } catch (error) {
-      const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+      const message = error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -63,10 +55,7 @@ export const getFarmerProducts = createAsyncThunk(
       const { data } = await axios.get(`${API_URL}/products/farmer/me`, config);
       return data;
     } catch (error) {
-      const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+      const message = error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -85,17 +74,10 @@ export const createProduct = createAsyncThunk(
         },
       };
 
-      const { data } = await axios.post(
-        `${API_URL}/products`,
-        productData,
-        config
-      );
+      const { data } = await axios.post(`${API_URL}/products`, productData, config);
       return data;
     } catch (error) {
-      const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+      const message = error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -114,17 +96,10 @@ export const updateProduct = createAsyncThunk(
         },
       };
 
-      const { data } = await axios.put(
-        `${API_URL}/products/${id}`,
-        productData,
-        config
-      );
+      const { data } = await axios.put(`${API_URL}/products/${id}`, productData, config);
       return data;
     } catch (error) {
-      const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+      const message = error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -145,10 +120,7 @@ export const deleteProduct = createAsyncThunk(
       await axios.delete(`${API_URL}/products/${id}`, config);
       return id;
     } catch (error) {
-      const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+      const message = error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -186,7 +158,7 @@ const productSlice = createSlice({
       })
       .addCase(getProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = action.payload.data;
+        state.products = action.payload.data ?? action.payload;
       })
       .addCase(getProducts.rejected, (state, action) => {
         state.loading = false;
@@ -199,7 +171,7 @@ const productSlice = createSlice({
       })
       .addCase(getProductDetails.fulfilled, (state, action) => {
         state.loading = false;
-        state.product = action.payload.data;
+        state.product = action.payload.data ?? action.payload;
       })
       .addCase(getProductDetails.rejected, (state, action) => {
         state.loading = false;
@@ -212,7 +184,7 @@ const productSlice = createSlice({
       })
       .addCase(getFarmerProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.farmerProducts = action.payload.data;
+        state.farmerProducts = action.payload.data ?? action.payload;
       })
       .addCase(getFarmerProducts.rejected, (state, action) => {
         state.loading = false;
@@ -227,7 +199,7 @@ const productSlice = createSlice({
       .addCase(createProduct.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
-        state.farmerProducts.push(action.payload.data);
+        state.farmerProducts.push(action.payload.data ?? action.payload);
         toast.success("Product created successfully!");
       })
       .addCase(createProduct.rejected, (state, action) => {
@@ -244,10 +216,9 @@ const productSlice = createSlice({
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
+        const updatedProduct = action.payload.data ?? action.payload;
         state.farmerProducts = state.farmerProducts.map((product) =>
-          product._id === action.payload.data._id
-            ? action.payload.data
-            : product
+          product._id === updatedProduct._id ? updatedProduct : product
         );
         toast.success("Product updated successfully!");
       })

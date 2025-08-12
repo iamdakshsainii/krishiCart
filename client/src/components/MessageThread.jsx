@@ -1,72 +1,74 @@
-import React, { useState, useEffect, useRef } from "react"
-import { useParams } from "react-router-dom"
-import axios from "axios"
-import { socket } from "../utils/socket"
+import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { socket } from "../utils/socket";
 
 const TEMPLATES = [
   "Hi! How can I help you?",
   "Thanks for your message!",
   "Your order is ready for pickup.",
   "Please let me know if you have any questions.",
-]
+];
 
 const MessageThread = ({ user }) => {
-  const { userId } = useParams()
-  const [messages, setMessages] = useState([])
-  const [input, setInput] = useState("")
-  const messagesEndRef = useRef(null)
+  const { userId } = useParams();
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const messagesEndRef = useRef(null);
+
+  const API_URL = import.meta.env.VITE_API_URL;
 
   // Fetch messages history on mount or user change
   useEffect(() => {
     async function fetchMessages() {
       try {
-        const res = await axios.get(`/api/messages/${userId}`)
-        setMessages(res.data.data || [])
+        const res = await axios.get(`${API_URL}/api/messages/${userId}`);
+        setMessages(res.data.data || []);
         // Mark messages as read after fetching
-        await axios.put(`/api/messages/read/${userId}`)
+        await axios.put(`${API_URL}/api/messages/read/${userId}`);
       } catch (err) {
-        console.error("Failed to fetch messages:", err)
+        console.error("Failed to fetch messages:", err);
       }
     }
-    fetchMessages()
-  }, [userId])
+    fetchMessages();
+  }, [userId, API_URL]);
 
   // Listen for real-time new messages
   useEffect(() => {
     const handleNewMessage = (data) => {
-      const fromOrToCurrent = data.from === userId || data.to === userId
+      const fromOrToCurrent = data.from === userId || data.to === userId;
       if (fromOrToCurrent) {
-        setMessages((prev) => [...prev, data.message])
+        setMessages((prev) => [...prev, data.message]);
       }
-    }
+    };
 
-    socket.on("newMessage", handleNewMessage)
+    socket.on("newMessage", handleNewMessage);
 
     return () => {
-      socket.off("newMessage", handleNewMessage)
-    }
-  }, [userId])
+      socket.off("newMessage", handleNewMessage);
+    };
+  }, [userId]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   // Send message handler
   const sendMessage = async (e) => {
-    e.preventDefault()
-    if (!input.trim()) return
+    e.preventDefault();
+    if (!input.trim()) return;
     try {
-      const res = await axios.post("/api/messages", {
+      const res = await axios.post(`${API_URL}/api/messages`, {
         receiver: userId,
         content: input,
-      })
-      setMessages((prev) => [...prev, res.data.data])
-      setInput("")
+      });
+      setMessages((prev) => [...prev, res.data.data]);
+      setInput("");
     } catch (err) {
-      console.error("Error sending message:", err)
+      console.error("Error sending message:", err);
     }
-  }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-lg max-w-3xl mx-auto p-6 flex flex-col h-[600px]">
@@ -128,7 +130,7 @@ const MessageThread = ({ user }) => {
         </button>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default MessageThread
+export default MessageThread;

@@ -7,36 +7,22 @@ const API_URL = import.meta.env.VITE_API_URL;
 const userFromStorage = localStorage.getItem("user")
   ? JSON.parse(localStorage.getItem("user"))
   : null;
-const tokenFromStorage = localStorage.getItem("token")
-  ? localStorage.getItem("token")
-  : null;
+const tokenFromStorage = localStorage.getItem("token") || null;
 
 // Register user
 export const register = createAsyncThunk(
   "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-
-      const { data } = await axios.post(
-        `${API_URL}/auth/register`,
-        userData,
-        config
-      );
-
+      const { data } = await axios.post(`${API_URL}/auth/register`, userData, {
+        headers: { "Content-Type": "application/json" },
+      });
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-
       return data;
     } catch (error) {
       const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+        error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -47,27 +33,15 @@ export const login = createAsyncThunk(
   "auth/login",
   async (userData, { rejectWithValue }) => {
     try {
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      };
-
-      const { data } = await axios.post(
-        `${API_URL}/auth/login`,
-        userData,
-        config
-      );
-
+      const { data } = await axios.post(`${API_URL}/auth/login`, userData, {
+        headers: { "Content-Type": "application/json" },
+      });
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-
       return data;
     } catch (error) {
       const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+        error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -79,25 +53,15 @@ export const loadUser = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token || tokenFromStorage;
+      if (!token) return rejectWithValue("No token found");
 
-      if (!token) {
-        return rejectWithValue("No token found");
-      }
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
-      const { data } = await axios.get(`${API_URL}/auth/me`, config);
-
+      const { data } = await axios.get(`${API_URL}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       return data;
     } catch (error) {
       const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+        error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -109,28 +73,21 @@ export const updateProfile = createAsyncThunk(
   async (userData, { rejectWithValue, getState }) => {
     try {
       const token = getState().auth.token;
-
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
       const { data } = await axios.put(
         `${API_URL}/users/profile`,
         userData,
-        config
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-
       localStorage.setItem("user", JSON.stringify(data.data));
-
       return data;
     } catch (error) {
       const message =
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message;
+        error.response?.data?.message || error.message;
       return rejectWithValue(message);
     }
   }
@@ -195,7 +152,7 @@ const authSlice = createSlice({
         state.error = action.payload;
         toast.error(action.payload);
       })
-      // Load User
+      // Load user
       .addCase(loadUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -205,13 +162,13 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload.user;
       })
-      .addCase(loadUser.rejected, (state, action) => {
+      .addCase(loadUser.rejected, (state) => {
         state.loading = false;
         state.isAuthenticated = false;
         state.token = null;
         state.user = null;
       })
-      // Update Profile
+      // Update profile
       .addCase(updateProfile.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -237,5 +194,4 @@ const authSlice = createSlice({
 });
 
 export const { clearError } = authSlice.actions;
-
 export default authSlice.reducer;
