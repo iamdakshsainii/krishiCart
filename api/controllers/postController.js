@@ -1,71 +1,51 @@
-const Post = require("../models/Post");
+const Post = require('../models/Post');
+const asyncHandler = require('express-async-handler');
 
-// @desc    Create new post
+// @desc    Create a new post
 // @route   POST /api/posts
 // @access  Private
-const createPost = async (req, res) => {
-  try {
-    const { content } = req.body;
+const createPost = asyncHandler(async (req, res) => {
+  const { content } = req.body;
 
-    if (!content) {
-      return res.status(400).json({ message: "Post content is required" });
-    }
+  const post = await Post.create({
+    user: req.user._id,
+    content,
+    images: req.files?.map(file => file.path) // if using file upload
+  });
 
-    const newPost = await Post.create({
-      user: req.user.id,
-      content
-    });
-
-    res.status(201).json(newPost);
-  } catch (error) {
-    console.error("Error creating post:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
+  res.status(201).json(post);
+});
 
 // @desc    Get all posts
 // @route   GET /api/posts
 // @access  Public
-const getPosts = async (req, res) => {
-  try {
-    const posts = await Post.find()
-      .populate("user", "name email")
-      .sort({ createdAt: -1 });
+const getPosts = asyncHandler(async (req, res) => {
+  const posts = await Post.find().populate('user', 'name avatar').sort('-createdAt');
+  res.json(posts);
+});
 
-    res.status(200).json(posts);
-  } catch (error) {
-    console.error("Error fetching posts:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-// @desc    Like or unlike post
+// @desc    Like/unlike a post
 // @route   PUT /api/posts/:id/like
 // @access  Private
-const likePost = async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.id);
+const likePost = asyncHandler(async (req, res) => {
+  const post = await Post.findById(req.params.id);
 
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-
-    const userId = req.user.id;
-    if (post.likes.includes(userId)) {
-      // Unlike
-      post.likes = post.likes.filter(id => id.toString() !== userId);
-    } else {
-      // Like
-      post.likes.push(userId);
-    }
-
-    await post.save();
-    res.status(200).json(post);
-  } catch (error) {
-    console.error("Error liking post:", error);
-    res.status(500).json({ message: "Server error" });
+  if (!post) {
+    res.status(404);
+    throw new Error('Post not found');
   }
-};
+
+  const alreadyLiked = post.likes.includes(req.user._id);
+
+  if (alreadyLiked) {
+    post.likes = post.likes.filter(like => like.toString() !== req.user._id.toString());
+  } else {
+    post.likes.push(req.user._id);
+  }
+
+  await post.save();
+  res.json(post);
+});
 
 module.exports = {
   createPost,

@@ -1,7 +1,7 @@
 // src/components/StoryCard.jsx
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { likePost } from '../../redux/slices/farmConnectSlice';
+import { likePost } from '../redux/slices/farmConnectSlice';
 import {
   FaHeart,
   FaRegHeart,

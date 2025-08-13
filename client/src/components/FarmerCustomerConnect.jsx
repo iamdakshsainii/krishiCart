@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentUser, setActiveTab } from "../redux/slices/farmConnectSlice";
-import CreatePostModal from "../pages/farmer/CreatePostModal";
-import CreateStoryModal from "../pages/farmer/CreateStoryModal";
-import PostCard from "../pages/farmer/PostCard";
-import StoryCard from "../pages/farmer/StoryCards";
+import CreatePostModal from "./CreatePostModal";
+import CreateStoryModal from "./CreateStoryModal";
+import PostCard from "./PostCard";
+import StoryCard from "./StoryCards";
 import {
   FaPlus,
   FaNewspaper,

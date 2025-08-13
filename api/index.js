@@ -3,12 +3,14 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const path = require("path");
+const fileUpload = require('express-fileupload');
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
+const farmConnectRoutes = require("./routes/farmConnectRoutes");
 const connectDB = require("./db/connection");
 
 // Load environment variables
@@ -42,6 +44,11 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(fileUpload({
+  useTempFiles: true,
+  tempFileDir: '/tmp/'
+}));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
 connectDB();
@@ -53,6 +60,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/farm-connect", farmConnectRoutes);
 
 // ✅ ChatGPT Endpoint
 app.post("/api/chat", async (req, res) => {
@@ -124,7 +132,7 @@ if (process.env.NODE_ENV === "production") {
 
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(clientPath, "index.html"));
-  });
+  })
 }
 
 // Default Route

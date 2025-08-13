@@ -1,15 +1,13 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const postController = require("../controllers/postController");
-const { protect } = require("../middleware/authMiddleware");
+const postController = require('../controllers/postController');
+const { protect } = require('../middleware/authMiddleware');
+const upload = require('../utils/fileUpload'); // if using file uploads
 
-// Create post
-router.post("/", protect, postController.createPost);
+router.route('/')
+  .get(postController.getPosts)
+  .post(protect, upload.array('images', 5), postController.createPost);
 
-// Get all posts
-router.get("/", postController.getPosts);
-
-// Like/Unlike a post
-router.put("/:id/like", protect, postController.likePost);
+router.route('/:id/like').put(protect, postController.likePost);
 
 module.exports = router;

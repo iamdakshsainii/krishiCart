@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createStory } from '../../redux/slices/farmConnectSlice';
+import { createStory } from '../redux/slices/farmConnectSlice';
 import {
   FaTimes, FaImage, FaMapMarkerAlt, FaHashtag, FaQuoteLeft,
   FaPlus, FaTrash, FaAward, FaCalendarAlt, FaClock, FaBookOpen,
