@@ -1,43 +1,32 @@
-const express = require('express');
+// routes/farmConnectRoutes.js
+const express = require("express");
 const router = express.Router();
 const {
   createPost,
   getPosts,
   likePost,
+  addComment,
+  sharePost,
   createStory,
   getStories,
   likeStory,
-  addComment,
-  sharePost,
   getFarmerProfile
-} = require('../controllers/farmConnectController');
-const { protect } = require('../middleware/authMiddleware');
-const upload = require('../utils/fileUpload');
+} = require("../controllers/farmConnectController");
+const { verifyToken, isFarmer } = require("../middleware/authMiddleware");
 
 // Posts routes
-router.route('/posts')
-  .get(getPosts)
-  .post(protect, upload.array('images', 5), createPost);
-
-router.route('/posts/:id/like')
-  .post(protect, likePost);
-
-router.route('/posts/:id/comments')
-  .post(protect, addComment);
-
-router.route('/posts/:id/share')
-  .post(protect, sharePost);
+router.post("/posts", verifyToken, isFarmer, createPost);
+router.get("/posts", getPosts);
+router.post("/posts/:id/like", verifyToken, likePost);
+router.post("/posts/:id/comments", verifyToken, addComment);
+router.post("/posts/:id/share", verifyToken, sharePost);
 
 // Stories routes
-router.route('/stories')
-  .get(getStories)
-  .post(protect, upload.single('image'), createStory);
-
-router.route('/stories/:id/like')
-  .post(protect, likeStory);
+router.post("/stories", verifyToken, isFarmer, createStory);
+router.get("/stories", getStories);
+router.post("/stories/:id/like", verifyToken, likeStory);
 
 // Farmer profile
-router.route('/farmers/:id')
-  .get(getFarmerProfile);
+router.get("/farmers/:id", getFarmerProfile);
 
 module.exports = router;

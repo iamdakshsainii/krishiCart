@@ -1,122 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createPost } from '../redux/slices/farmConnectSlice';
-import { setShowCreatePostModal } from '../redux/slices/farmConnectSlice';
-import { toast } from 'react-toastify';
+import { createPost, clearError, fetchPosts } from '../redux/slices/farmConnectSlice';
 
-const CreatePostModal = () => {
-  const dispatch = useDispatch();
-  const { showCreatePostModal, createLoading } = useSelector(state => state.farmConnect);
+const CreatePostModal = ({ isOpen, onClose }) => {
   const [content, setContent] = useState('');
-  const [images, setImages] = useState([]);
+  const imageRef = useRef(null);
+  const dispatch = useDispatch();
+  const { createLoading, error } = useSelector((state) => state.farmConnect);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const formData = new FormData();
-    formData.append('content', content);
-    images.forEach(image => {
-      formData.append('images', image);
-    });
-
-    dispatch(createPost(formData))
-      .unwrap()
-      .then(() => {
-        setContent('');
-        setImages([]);
-        dispatch(setShowCreatePostModal(false));
-      })
-      .catch(error => {
-        toast.error(error || 'Failed to create post');
-      });
-  };
-
-  const handleImageChange = (e) => {
-    if (e.target.files.length + images.length > 5) {
-      toast.error('You can upload maximum 5 images');
+    if (!content.trim()) {
+      alert("Post content is required");
       return;
     }
-    setImages([...images, ...e.target.files]);
+    try {
+      const formData = new FormData();
+      formData.append("content", content.trim());
+      if (imageRef.current?.files.length) {
+        Array.from(imageRef.current.files).forEach(file => {
+          formData.append("images", file);
+        });
+      }
+      await dispatch(createPost(formData)).unwrap();
+      setContent('');
+      if (imageRef.current) imageRef.current.value = '';
+      dispatch(clearError());
+      dispatch(fetchPosts());
+      onClose();
+    } catch (err) {
+      console.error('Failed to create post:', err);
+      alert(err?.message || "Failed to create post");
+    }
   };
 
-  const removeImage = (index) => {
-    setImages(images.filter((_, i) => i !== index));
+  const handleCancel = () => {
+    dispatch(clearError());
+    onClose();
   };
 
-  if (!showCreatePostModal) return null;
-
+  if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-        <div className="p-4 border-b">
-          <h2 className="text-xl font-semibold">Create Post</h2>
-          <button
-            onClick={() => dispatch(setShowCreatePostModal(false))}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-          >
-            &times;
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg w-full max-w-md">
+        <h2 className="text-xl font-bold mb-4">Create New Post</h2>
+        {error && <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">{error}</div>}
+        <form onSubmit={handleSubmit}>
           <textarea
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="Share your farming journey..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            rows="4"
+            className="w-full border rounded p-3 mb-3"
+            placeholder="What's on your mind?"
             required
           />
-
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Add Images (max 5)</label>
-            <input
-              type="file"
-              multiple
-              onChange={handleImageChange}
-              className="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-md file:border-0
-                file:text-sm file:font-semibold
-                file:bg-green-50 file:text-green-700
-                hover:file:bg-green-100"
-              accept="image/*"
-              disabled={images.length >= 5}
-            />
-
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {images.map((image, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt={`Preview ${index}`}
-                    className="w-full h-24 object-cover rounded"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center"
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6 flex justify-end space-x-3">
+          <input type="file" accept="image/*" ref={imageRef} multiple className="mb-4" />
+          <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => dispatch(setShowCreatePostModal(false))}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              disabled={createLoading}
+              onClick={handleCancel}
+              className="flex-1 bg-gray-200 py-2 rounded hover:bg-gray-300"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-              disabled={createLoading || !content.trim()}
+              disabled={createLoading}
+              className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
             >
               {createLoading ? 'Posting...' : 'Post'}
             </button>
@@ -126,5 +75,4 @@ const CreatePostModal = () => {
     </div>
   );
 };
-
 export default CreatePostModal;

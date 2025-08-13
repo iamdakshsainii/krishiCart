@@ -2,35 +2,28 @@
 const mongoose = require('mongoose');
 
 const storySchema = new mongoose.Schema({
+  user: {  // Main reference for the author, matches backend
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   title: { type: String, required: true },
   excerpt: { type: String },
   content: { type: String, required: true },
   category: { type: String, required: true },
   location: { type: String },
-  coverImage: { type: String },
+  coverImage: { type: String, required: true },
   timeline: { type: String },
   tags: [{ type: String }],
   achievements: [{ label: String, value: String }],
   readTime: { type: Number, default: 5 },
-  author: {
-    id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    name: String,
-    avatar: String,
-    role: String
-  },
-  likes: { type: Number, default: 0 },
-  likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // track users who like
   shares: { type: Number, default: 0 },
   views: { type: Number, default: 0 },
   comments: [
     {
       content: String,
-      author: {
-        id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        name: String,
-        avatar: String,
-        role: String
-      },
+      user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       createdAt: { type: Date, default: Date.now }
     }
   ],

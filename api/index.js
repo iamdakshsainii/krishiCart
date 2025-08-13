@@ -3,7 +3,9 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const path = require("path");
-const fileUpload = require('express-fileupload');
+const fileUpload = require("express-fileupload");
+
+// ===== Route Imports =====
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
@@ -11,6 +13,8 @@ const orderRoutes = require("./routes/orderRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const farmConnectRoutes = require("./routes/farmConnectRoutes");
+const weatherRoutes = require("./routes/weatherRoutes"); // ✅ Added
+
 const connectDB = require("./db/connection");
 
 // Load environment variables
@@ -19,18 +23,18 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS whitelist - add your frontend URLs here
+// ===== CORS whitelist =====
 const allowedOrigins = [
   "https://krishi-cart-hqtxtz1zj-sainidaksh70-gmailcoms-projects.vercel.app",
   "https://krishi-cart-chi.vercel.app",
   "http://localhost:3000",
+  "http://localhost:5173",
 ];
 
-// CORS middleware with whitelist
+// ===== CORS middleware =====
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (like Postman, curl)
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) === -1) {
         const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
@@ -38,22 +42,25 @@ app.use(
       }
       return callback(null, true);
     },
-    credentials: true, // if you use cookies or auth headers
+    credentials: true,
   })
 );
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(fileUpload({
-  useTempFiles: true,
-  tempFileDir: '/tmp/'
-}));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
 
-// Connect to MongoDB
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ===== Connect to MongoDB =====
 connectDB();
 
-// API Routes
+// ===== API Routes =====
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
@@ -61,8 +68,9 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/farm-connect", farmConnectRoutes);
+app.use("/api/weather", weatherRoutes); // ✅ Mounted safely
 
-// ✅ ChatGPT Endpoint
+// ===== ChatGPT Endpoint =====
 app.post("/api/chat", async (req, res) => {
   try {
     const { message } = req.body;
@@ -72,7 +80,6 @@ app.post("/api/chat", async (req, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(500).json({ error: "OpenAI API key not configured" });
     }
-
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -93,7 +100,6 @@ app.post("/api/chat", async (req, res) => {
             - आधुनिक खेती की तकनीकें
             - सिंचाई की विधियां
             - फसल की कटाई और भंडारण
-
             हमेशा व्यावहारिक और उपयोगी सलाह दें।`,
           },
           { role: "user", content: message },
@@ -102,7 +108,6 @@ app.post("/api/chat", async (req, res) => {
         temperature: 0.7,
       }),
     });
-
     if (!response.ok) {
       const errorData = await response.json();
       console.error("OpenAI API Error:", errorData);
@@ -110,12 +115,10 @@ app.post("/api/chat", async (req, res) => {
         .status(response.status)
         .json({ error: errorData.error?.message || "OpenAI API Error" });
     }
-
     const data = await response.json();
     const reply =
       data.choices?.[0]?.message?.content ||
       "माफ करें, मुझे उत्तर नहीं मिला।";
-
     res.json({ reply });
   } catch (error) {
     console.error("Chat API Error:", error);
@@ -125,22 +128,30 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-// ✅ Serve Frontend in Production
+// ===== Serve Frontend in Production =====
 if (process.env.NODE_ENV === "production") {
   const clientPath = path.join(__dirname, "../client/dist");
   app.use(express.static(clientPath));
-
   app.get("*", (req, res) => {
     res.sendFile(path.resolve(clientPath, "index.html"));
-  })
+  });
 }
 
-// Default Route
+// ===== Default Route =====
 app.get("/", (req, res) => {
   res.send("KrishiCart API is running");
 });
 
-// Start server
+// ===== Simple Error Handler =====
+app.use((err, req, res, next) => {
+  console.error("Unhandled Error:", err);
+  res.status(err.status || 500).json({
+    success: false,
+    error: err.message || "Internal Server Error",
+  });
+});
+
+// ===== Start Server =====
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

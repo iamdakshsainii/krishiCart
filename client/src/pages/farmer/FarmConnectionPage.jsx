@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchPosts,
@@ -8,8 +8,11 @@ import {
   setShowCreateStoryModal
 } from '../../redux/slices/farmConnectSlice';
 import PostCard from '../../components/PostCard';
+import StoryCard from '../../components/StoryCards';
 import CreatePostModal from '../../components/CreatePostModal';
+import CreateStoryModal from '../../components/CreateStoryModal';
 import Loader from '../../components/Loader';
+import EmptyState from '../../components/EmptyState';
 
 const FarmConnectionPage = () => {
   const dispatch = useDispatch();
@@ -19,96 +22,130 @@ const FarmConnectionPage = () => {
     activeTab,
     postsLoading,
     storiesLoading,
-    showCreatePostModal,
-    showCreateStoryModal
+    error
   } = useSelector(state => state.farmConnect);
 
   useEffect(() => {
-    if (activeTab === 'posts') {
-      dispatch(fetchPosts());
-    } else {
-      dispatch(fetchStories());
-    }
+    const action = activeTab === 'posts' ? fetchPosts() : fetchStories();
+    dispatch(action);
+
+    return () => {
+      // Cancel any pending requests if component unmounts
+      // This requires axios cancel tokens in your thunks
+    };
   }, [dispatch, activeTab]);
 
+  const handleCreatePost = () => dispatch(setShowCreatePostModal(true));
+  const handleCreateStory = () => dispatch(setShowCreateStoryModal(true));
+  const handleTabChange = (tab) => dispatch(setActiveTab(tab));
+
+  const renderedPosts = useMemo(() =>
+    posts.map(post => (
+      <PostCard
+        key={`post-${post._id}`}
+        post={post}
+        className="mb-6"
+      />
+    )),
+    [posts]
+  );
+
+  const renderedStories = useMemo(() =>
+    stories.map(story => (
+      <StoryCard
+        key={`story-${story._id}`}
+        story={story}
+        className="h-full"
+      />
+    )),
+    [stories]
+  );
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="bg-red-50 border-l-4 border-red-500 p-4">
+          <p className="text-red-700">Error loading content: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-3xl">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Farm Connect</h1>
-        <div className="flex space-x-2">
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <h1 className="text-3xl font-bold text-gray-900">Farm Connect</h1>
+        <div className="flex flex-wrap gap-3">
           <button
-            onClick={() => dispatch(setShowCreatePostModal(true))}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+            onClick={handleCreatePost}
+            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 transition-colors"
+            aria-label="Create new post"
           >
-            Create Post
+            <span>+</span> Create Post
           </button>
           <button
-            onClick={() => dispatch(setShowCreateStoryModal(true))}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            onClick={handleCreateStory}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+            aria-label="Create new story"
           >
-            Create Story
+            <span>+</span> Create Story
           </button>
         </div>
       </div>
 
       <div className="flex border-b mb-6">
         <button
-          className={`px-4 py-2 font-medium ${activeTab === 'posts' ? 'border-b-2 border-green-600 text-green-600' : 'text-gray-500'}`}
-          onClick={() => dispatch(setActiveTab('posts'))}
+          className={`px-6 py-3 font-medium transition-colors ${activeTab === 'posts'
+            ? 'border-b-2 border-green-600 text-green-600'
+            : 'text-gray-500 hover:text-gray-700'}`}
+          onClick={() => handleTabChange('posts')}
         >
-          Posts
+          Community Posts
         </button>
         <button
-          className={`px-4 py-2 font-medium ${activeTab === 'stories' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
-          onClick={() => dispatch(setActiveTab('stories'))}
+          className={`px-6 py-3 font-medium transition-colors ${activeTab === 'stories'
+            ? 'border-b-2 border-blue-600 text-blue-600'
+            : 'text-gray-500 hover:text-gray-700'}`}
+          onClick={() => handleTabChange('stories')}
         >
-          Stories
+          Farmer Stories
         </button>
       </div>
 
       {postsLoading || storiesLoading ? (
-        <Loader />
+        <Loader className="min-h-[300px]" />
       ) : activeTab === 'posts' ? (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {posts.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No posts yet. Be the first to share your farming journey!</p>
-            </div>
-          ) : (
-            posts.map(post => (
-              <PostCard key={post._id || post.id} post={post} />
-            ))
-          )}
+            <EmptyState
+              icon="📝"
+              title="No Posts Yet"
+              description="Be the first to share your farming experience"
+              actionText="Create Post"
+              onAction={handleCreatePost}
+            />
+          ) : renderedPosts}
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {stories.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No stories yet. Share your daily farming moments!</p>
+            <div className="col-span-3">
+              <EmptyState
+                icon="📖"
+                title="No Stories Yet"
+                description="Share your farming journey with the community"
+                actionText="Create Story"
+                onAction={handleCreateStory}
+              />
             </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {stories.map(story => (
-                <div key={story._id || story.id} className="relative">
-                  <img
-                    src={story.image}
-                    alt="Story"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 rounded-b-lg">
-                    <p className="text-white text-sm line-clamp-2">{story.content}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          ) : renderedStories}
         </div>
       )}
 
       <CreatePostModal />
-      {/* Add CreateStoryModal component here when ready */}
+      <CreateStoryModal />
     </div>
   );
 };
 
-export default FarmConnectionPage;
+export default React.memo(FarmConnectionPage);
