@@ -2,7 +2,10 @@
 import { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { HelmetProvider } from "react-helmet-async"; // ✅ SEO wrapper
 import { loadUser } from "./redux/slices/authSlice";
+
+// Layout & Utility
 import Layout from "./components/Layout";
 import PrivateRoute from "./components/PrivateRoute";
 import AdminRoute from "./components/AdminRoute";
@@ -20,6 +23,10 @@ import FarmerDetailPage from "./pages/FarmerDetailPage";
 import ProductsPage from "./pages/ProductsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
+
+// ✅ News Pages (correct import to match earlier file creation)
+import NewsPage from "./pages/NewsPage";
+import NewsDetailPage from "./pages/farmer/NewsDetailPage";
 
 // Protected Pages
 import ProfilePage from "./pages/ProfilePage";
@@ -44,7 +51,7 @@ import AdminUsersPage from "./pages/admin/UsersPage";
 import AdminCategoriesPage from "./pages/admin/CategoriesPage";
 import AdminOrdersPage from "./pages/admin/OrdersPage";
 
-// Extra Components
+// Extras
 import WeatherWidget from "./components/WeatherWidget";
 import FarmerCustomerConnect from "./components/FarmerCustomerConnect";
 
@@ -56,7 +63,7 @@ function App() {
   }, [dispatch]);
 
   return (
-    <>
+    <HelmetProvider>
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Layout />}>
@@ -70,7 +77,11 @@ function App() {
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/:id" element={<ProductDetailPage />} />
 
-          {/* Weather Page - Public */}
+          {/* ✅ News Routes */}
+          <Route path="news" element={<NewsPage />} />
+          <Route path="news/:id" element={<NewsDetailPage />} />
+
+          {/* Weather Page */}
           <Route
             path="weather"
             element={
@@ -81,8 +92,8 @@ function App() {
             }
           />
 
-          {/* Farm Connect - Protected Route (Farmers and Consumers only) */}
-          <Route element={<PrivateRoute allowedRoles={['farmer', 'consumer']} />}>
+          {/* Farm Connect (Protected for Farmer/Consumer) */}
+          <Route element={<PrivateRoute allowedRoles={["farmer", "consumer"]} />}>
             <Route
               path="farm-connect"
               element={
@@ -93,8 +104,8 @@ function App() {
             />
           </Route>
 
-          {/* General Protected Routes (All authenticated users) */}
-          <Route element={<PrivateRoute allowedRoles={['farmer', 'consumer', 'admin']} />}>
+          {/* Protected Routes (All logged users) */}
+          <Route element={<PrivateRoute allowedRoles={["farmer", "consumer", "admin"]} />}>
             <Route path="profile" element={<ProfilePage />} />
             <Route path="messages" element={<MessagesPage />} />
             <Route path="messages/:userId" element={<ConversationPage />} />
@@ -102,12 +113,12 @@ function App() {
             <Route path="orders/:id" element={<OrderDetailPage />} />
           </Route>
 
-          {/* Consumer Routes */}
+          {/* Consumer Only */}
           <Route element={<ConsumerRoute />}>
             <Route path="checkout" element={<CheckoutPage />} />
           </Route>
 
-          {/* Farmer Routes */}
+          {/* Farmer Only */}
           <Route element={<FarmerRoute />}>
             <Route path="farmer/dashboard" element={<FarmerDashboardPage />} />
             <Route path="farmer/products" element={<FarmerProductsPage />} />
@@ -115,11 +126,10 @@ function App() {
             <Route path="farmer/products/edit/:id" element={<FarmerEditProductPage />} />
             <Route path="farmer/orders" element={<FarmerOrdersPage />} />
             <Route path="farmer/profile" element={<FarmerProfilePage />} />
-            {/* Farmer-specific Farm Connect - More advanced features */}
             <Route path="farmer/farm-connect" element={<FarmConnectionPage />} />
           </Route>
 
-          {/* Admin Routes */}
+          {/* Admin Only */}
           <Route element={<AdminRoute />}>
             <Route path="admin/dashboard" element={<AdminDashboardPage />} />
             <Route path="admin/users" element={<AdminUsersPage />} />
@@ -131,7 +141,7 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
-    </>
+    </HelmetProvider>
   );
 }
 

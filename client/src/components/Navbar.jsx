@@ -16,18 +16,19 @@ import {
   FaInfoCircle,
   FaCloud,
   FaLock,
+  FaNewspaper, // ✅ News icon
 } from "react-icons/fa";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.cart);
-
   const { canAccessFarmConnect, isFarmer, isConsumer, isAdmin } = usePermissions();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -47,6 +48,7 @@ const Navbar = () => {
       .toUpperCase();
   };
 
+  // ✅ Fixed comparison to === instead of =
   const isActiveLink = (path) => {
     if (path === "/" && location.pathname === "/") return true;
     if (path !== "/" && location.pathname.startsWith(path)) return true;
@@ -57,6 +59,8 @@ const Navbar = () => {
     { name: "Home", path: "/", icon: FaHome, public: true },
     { name: "Products", path: "/products", icon: FaShoppingBasket, public: true },
     { name: "Farmers", path: "/farmers", icon: FaUsers, public: true },
+    // ✅ NEWS LINK ADDED HERE
+    { name: "News", path: "/news", icon: FaNewspaper, public: true, isNew: true },
     {
       name: "Farm Connect",
       path: "/farm-connect",
@@ -110,7 +114,7 @@ const Navbar = () => {
       <div className="flex-1 overflow-y-auto">
         <ul className="flex flex-col p-4 space-y-2">
           {getVisibleNavItems().map((item) => {
-            const IconComponent = item.icon;
+            const Icon = item.icon;
             const isActive = isActiveLink(item.path);
             const isDisabled = item.requiresAuth && !isAuthenticated;
             const hasNoAccess =
@@ -144,7 +148,7 @@ const Navbar = () => {
                   `}
                 >
                   <div className="flex items-center gap-2">
-                    <IconComponent
+                    <Icon
                       className={`text-lg ${
                         isActive
                           ? "text-white"
@@ -153,11 +157,13 @@ const Navbar = () => {
                           : "text-blue-600"
                       }`}
                     />
-                    {(isDisabled || hasNoAccess) && item.name === "Farm Connect" && (
-                      <FaLock className="text-xs text-gray-400" />
-                    )}
+                    {(isDisabled || hasNoAccess) &&
+                      item.name === "Farm Connect" && (
+                        <FaLock className="text-xs text-gray-400" />
+                      )}
                   </div>
                   <span>{item.name}</span>
+
                   {item.isNew && (
                     <span className="absolute -top-1 -right-1 bg-gradient-to-r from-green-400 to-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold animate-pulse shadow-lg">
                       NEW
@@ -168,7 +174,7 @@ const Navbar = () => {
             );
           })}
 
-          {/* Consumer Cart */}
+          {/* Consumer Cart Link */}
           {isAuthenticated && isConsumer() && (
             <li>
               <Link
@@ -200,9 +206,10 @@ const Navbar = () => {
         </ul>
       </div>
 
-      {/* Profile */}
+      {/* Profile Section */}
       <div className="border-t border-blue-100 p-4">
         {isAuthenticated ? (
+          // Profile dropdown
           <div>
             <button
               onClick={toggleProfile}
@@ -224,6 +231,7 @@ const Navbar = () => {
                 </span>
               </div>
             </button>
+
             {isProfileOpen && (
               <div className="mt-3 space-y-2 bg-white rounded-lg shadow-lg border border-blue-100 p-2">
                 {isAdmin() && (
@@ -282,6 +290,7 @@ const Navbar = () => {
             )}
           </div>
         ) : (
+          // Login/Register buttons
           <div className="space-y-3">
             <Link
               to="/login"
