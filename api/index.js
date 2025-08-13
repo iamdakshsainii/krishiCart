@@ -13,7 +13,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const farmConnectRoutes = require("./routes/farmConnectRoutes");
-const weatherRoutes = require("./routes/weatherRoutes"); // ✅ Added
+const weatherRoutes = require("./routes/weatherRoutes"); 
 
 const connectDB = require("./db/connection");
 
