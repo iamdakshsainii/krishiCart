@@ -61,7 +61,7 @@ const WeatherWidget = () => {
       setError("");
 
       // Using deployed backend URL from env
-      const res = await fetch(`${API_URL}/api/weather?city=${city}`);
+      const res = await fetch(`${API_URL}/weather?city=${city}`);
 
       if (!res.ok) {
         const errData = await res.json();
