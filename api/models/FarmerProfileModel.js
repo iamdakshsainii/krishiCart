@@ -1,53 +1,77 @@
-const mongoose = require("mongoose");
+// models/FarmerProfile.js (Backend - MongoDB/Mongoose)
+const mongoose = require('mongoose');
 
-const FarmerProfileSchema = new mongoose.Schema(
+const businessHoursSchema = {
+  open: {
+    type: String,
+    default: '',
+  },
+  close: {
+    type: String,
+    default: '',
+  },
+};
+
+const farmerProfileSchema = mongoose.Schema(
   {
-    user: {
+    farmer: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
       required: true,
+      ref: 'User',
+      unique: true,
     },
     farmName: {
       type: String,
-      required: [true, "Please add a farm name"],
-      trim: true,
+      required: true,
     },
     description: {
       type: String,
-      required: [true, "Please add a description"],
+      default: '',
     },
-    farmImages: [String],
-    farmingPractices: [String],
-    establishedYear: Number,
-    socialMedia: {
-      facebook: String,
-      instagram: String,
-      twitter: String,
+    establishedYear: {
+      type: String,
+      default: '',
+    },
+    farmingPractices: {
+      type: [String],
+      default: [],
     },
     businessHours: {
-      monday: { open: String, close: String },
-      tuesday: { open: String, close: String },
-      wednesday: { open: String, close: String },
-      thursday: { open: String, close: String },
-      friday: { open: String, close: String },
-      saturday: { open: String, close: String },
-      sunday: { open: String, close: String },
-    },
-    acceptsPickup: {
-      type: Boolean,
-      default: false,
-    },
-    acceptsDelivery: {
-      type: Boolean,
-      default: false,
+      monday: { type: businessHoursSchema, default: {} },
+      tuesday: { type: businessHoursSchema, default: {} },
+      wednesday: { type: businessHoursSchema, default: {} },
+      thursday: { type: businessHoursSchema, default: {} },
+      friday: { type: businessHoursSchema, default: {} },
+      saturday: { type: businessHoursSchema, default: {} },
+      sunday: { type: businessHoursSchema, default: {} },
     },
     deliveryRadius: {
-      type: Number,
-      default: 0,
+      type: String,
+      default: '',
+    },
+    minOrderValue: {
+      type: String,
+      default: '',
+    },
+    paymentMethods: {
+      type: [String],
+      default: [],
+    },
+    profileImage: {
+      type: String,
+      default: '',
     },
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    rating: {
+      type: Number,
+      default: 0,
+    },
+    totalReviews: {
+      type: Number,
+      default: 0,
     },
   },
   {
@@ -55,4 +79,4 @@ const FarmerProfileSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("FarmerProfile", FarmerProfileSchema);
+module.exports = mongoose.model('FarmerProfile', farmerProfileSchema);

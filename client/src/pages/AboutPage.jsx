@@ -7,10 +7,11 @@ import {
   FaCheck,
   FaInstagram
 } from "react-icons/fa";
-// Team image assets
-import { member1, member2 } from "../assets";
 
 // Update your team members here
+// Team image assets
+import { member1, member2, member3, member4 } from "../assets";
+
 const teamMembers = [
   {
     id: 1,
@@ -26,8 +27,22 @@ const teamMembers = [
     instagram: "https://www.instagram.com/thesaurabhyadavv/",
     linkedin: "https://www.linkedin.com/in/thesaurabhyadavv/",
   },
-  // Add more as needed
+  {
+    id: 3,
+    name: "Vaidehi Gupta",
+    pic: member3,
+    instagram: "https://www.instagram.com/no/",
+    linkedin: "https://www.linkedin.com/in/no/",
+  },
+  {
+    id: 4,
+    name: "Ashish Soni",
+    pic: member4,
+    instagram: "https://www.instagram.com/ashishsoni/",
+    linkedin: "https://www.linkedin.com/in/ashishsoni/",
+  },
 ];
+
 
 const AboutPage = () => {
   return (

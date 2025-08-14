@@ -1,96 +1,176 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import newsService from "../../services/newsAPI";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { newsService } from '../../services/newsAPI';
 
+// Async thunk for fetching news
 export const fetchNews = createAsyncThunk(
-  "news/fetchNews",
-  async ({ category, query, language, page = 1, pageSize = 12 }, _thunk) => {
-    if (query) return await newsService.searchNews(query, language, page, pageSize);
-    if (category) return await newsService.getNewsByCategory(category, language, page, pageSize);
-    return await newsService.getAgricultureNews(language, page, pageSize);
+  'news/fetchNews',
+  async ({ category = 'agriculture', page = 1, searchTerm = '' }, { rejectWithValue }) => {
+    try {
+      const response = await newsService.getNews({ category, page, searchTerm });
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Failed to fetch news');
+    }
   }
 );
 
-const persistedBookmarks = (() => {
-  try { return JSON.parse(localStorage.getItem("kc_bookmarks") || "[]"); }
-  catch { return []; }
-})();
+// Async thunk for fetching trending news
+export const fetchTrendingNews = createAsyncThunk(
+  'news/fetchTrendingNews',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await newsService.getTrendingNews();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Failed to fetch trending news');
+    }
+  }
+);
+
+// Async thunk for fetching news by category
+export const fetchNewsByCategory = createAsyncThunk(
+  'news/fetchNewsByCategory',
+  async ({ category, limit = 10 }, { rejectWithValue }) => {
+    try {
+      const response = await newsService.getNewsByCategory(category, limit);
+      return { category, data: response };
+    } catch (error) {
+      return rejectWithValue(error.message || 'Failed to fetch category news');
+    }
+  }
+);
+
+const initialState = {
+  articles: [],
+  trendingNews: [],
+  categoryNews: {
+    agriculture: [],
+    weather: [],
+    market: [],
+    technology: [],
+    government: []
+  },
+  loading: false,
+  error: null,
+  currentPage: 1,
+  totalPages: 1,
+  totalResults: 0,
+  searchTerm: '',
+  selectedCategory: 'agriculture',
+  bookmarkedArticles: JSON.parse(localStorage.getItem('bookmarkedArticles') || '[]'),
+  readArticles: JSON.parse(localStorage.getItem('readArticles') || '[]')
+};
 
 const newsSlice = createSlice({
-  name: "news",
-  initialState: {
-    articles: [],
-    totalResults: 0,
-    page: 1,
-    loading: false,
-    error: null,
-    activeCategory: null,
-    language: "en",
-    bookmarks: persistedBookmarks,
-    headlines: [],
-    query: "",
-    hasMore: true,
-  },
+  name: 'news',
+  initialState,
   reducers: {
-    setCategory(state, action) {
-      state.activeCategory = action.payload;
-      state.page = 1;
-      state.hasMore = true;
-      state.query = "";
+    setSearchTerm: (state, action) => {
+      state.searchTerm = action.payload;
     },
-    setLanguage(state, action) {
-      state.language = action.payload;
-      state.page = 1;
-      state.hasMore = true;
+    setSelectedCategory: (state, action) => {
+      state.selectedCategory = action.payload;
     },
-    setQuery(state, action) {
-      state.query = action.payload || "";
-      state.page = 1;
-      state.hasMore = true;
+    setCurrentPage: (state, action) => {
+      state.currentPage = action.payload;
     },
-    toggleBookmark(state, action) {
-      const id = action.payload?.id || action.payload;
-      const idx = state.bookmarks.findIndex((a) => a.id === id);
-      if (idx >= 0) state.bookmarks.splice(idx, 1);
-      else {
-        const found = state.articles.find((a) => a.id === id);
-        if (found) state.bookmarks.unshift(found);
+    bookmarkArticle: (state, action) => {
+      const article = action.payload;
+      const isBookmarked = state.bookmarkedArticles.some(a => a.url === article.url);
+
+      if (!isBookmarked) {
+        state.bookmarkedArticles.push(article);
+        localStorage.setItem('bookmarkedArticles', JSON.stringify(state.bookmarkedArticles));
       }
-      localStorage.setItem("kc_bookmarks", JSON.stringify(state.bookmarks));
     },
-    resetNews(state) {
-      state.articles = [];
-      state.totalResults = 0;
-      state.page = 1;
-      state.hasMore = true;
+    removeBookmark: (state, action) => {
+      const articleUrl = action.payload;
+      state.bookmarkedArticles = state.bookmarkedArticles.filter(a => a.url !== articleUrl);
+      localStorage.setItem('bookmarkedArticles', JSON.stringify(state.bookmarkedArticles));
+    },
+    markAsRead: (state, action) => {
+      const articleUrl = action.payload;
+      if (!state.readArticles.includes(articleUrl)) {
+        state.readArticles.push(articleUrl);
+        localStorage.setItem('readArticles', JSON.stringify(state.readArticles));
+      }
+    },
+    clearError: (state) => {
       state.error = null;
     },
+    resetNews: (state) => {
+      state.articles = [];
+      state.currentPage = 1;
+      state.totalPages = 1;
+      state.totalResults = 0;
+    }
   },
   extraReducers: (builder) => {
     builder
+      // Fetch News
       .addCase(fetchNews.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchNews.fulfilled, (state, action) => {
         state.loading = false;
-        const { articles, totalResults, page } = action.payload;
-        state.totalResults = totalResults;
-        state.page = page;
-        state.hasMore = state.articles.length + articles.length < totalResults;
-
-        // append if page>1 else replace
-        if (page > 1) state.articles.push(...articles);
-        else state.articles = articles;
-
-        // headlines for ticker (top 10 titles)
-        state.headlines = state.articles.slice(0, 10).map((a) => a.titleEn);
+        state.articles = action.payload.articles || [];
+        state.totalResults = action.payload.totalResults || 0;
+        state.totalPages = Math.ceil(state.totalResults / 20);
       })
       .addCase(fetchNews.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error?.message || "Failed to load news";
+        state.error = action.payload;
+      })
+
+      // Fetch Trending News
+      .addCase(fetchTrendingNews.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchTrendingNews.fulfilled, (state, action) => {
+        state.loading = false;
+        state.trendingNews = action.payload.articles || [];
+      })
+      .addCase(fetchTrendingNews.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Fetch News by Category
+      .addCase(fetchNewsByCategory.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchNewsByCategory.fulfilled, (state, action) => {
+        state.loading = false;
+        const { category, data } = action.payload;
+        state.categoryNews[category] = data.articles || [];
+      })
+      .addCase(fetchNewsByCategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
-  },
+  }
 });
 
-export const { setCategory, setLanguage, setQuery, toggleBookmark, resetNews } = newsSlice.actions;
+export const {
+  setSearchTerm,
+  setSelectedCategory,
+  setCurrentPage,
+  bookmarkArticle,
+  removeBookmark,
+  markAsRead,
+  clearError,
+  resetNews
+} = newsSlice.actions;
+
+// Selectors
+export const selectNews = (state) => state.news;
+export const selectArticles = (state) => state.news.articles;
+export const selectTrendingNews = (state) => state.news.trendingNews;
+export const selectCategoryNews = (state) => state.news.categoryNews;
+export const selectBookmarkedArticles = (state) => state.news.bookmarkedArticles;
+export const selectReadArticles = (state) => state.news.readArticles;
+export const selectNewsLoading = (state) => state.news.loading;
+export const selectNewsError = (state) => state.news.error;
+
 export default newsSlice.reducer;

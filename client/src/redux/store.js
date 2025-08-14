@@ -6,10 +6,9 @@ import cartReducer from "./slices/cartSlice";
 import orderReducer from "./slices/orderSlice";
 import messageReducer from "./slices/messageSlice";
 import farmerReducer from "./slices/farmerSlice";
+import profileReducer from './slices/profileSlice';
 import userReducer from "./slices/userSlice";
-// ✅ EXISTING: farmConnect reducer
 import farmConnectReducer from "./slices/farmConnectSlice";
-// ✅ NEW: Add news reducer
 import newsReducer from "./slices/newsSlice";
 
 export const store = configureStore({
@@ -22,9 +21,8 @@ export const store = configureStore({
     messages: messageReducer,
     farmers: farmerReducer,
     users: userReducer,
-    // ✅ EXISTING: farmConnect already in your reducers
+    profile: profileReducer,
     farmConnect: farmConnectReducer,
-    // ✅ NEW: Add news to your existing reducers
     news: newsReducer,
   },
   middleware: (getDefaultMiddleware) =>

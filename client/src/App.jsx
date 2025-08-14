@@ -12,6 +12,7 @@ import AdminRoute from "./components/AdminRoute";
 import FarmerRoute from "./components/FarmerRoute";
 import ConsumerRoute from "./components/ConsumerRoute";
 import ScrollToTop from "./components/ScrollToTop";
+import { ProfileLoader } from "./hooks/userProfileLoader"; // ✅ Added ProfileLoader
 
 // Public Pages
 import HomePage from "./pages/HomePage";
@@ -64,83 +65,85 @@ function App() {
 
   return (
     <HelmetProvider>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          {/* Public Routes */}
-          <Route index element={<HomePage />} />
-          <Route path="about" element={<AboutPage />} />
-          <Route path="login" element={<LoginPage />} />
-          <Route path="register" element={<RegisterPage />} />
-          <Route path="farmers" element={<FarmersPage />} />
-          <Route path="farmers/:id" element={<FarmerDetailPage />} />
-          <Route path="products" element={<ProductsPage />} />
-          <Route path="products/:id" element={<ProductDetailPage />} />
+      <ProfileLoader>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            {/* Public Routes */}
+            <Route index element={<HomePage />} />
+            <Route path="about" element={<AboutPage />} />
+            <Route path="login" element={<LoginPage />} />
+            <Route path="register" element={<RegisterPage />} />
+            <Route path="farmers" element={<FarmersPage />} />
+            <Route path="farmers/:id" element={<FarmerDetailPage />} />
+            <Route path="products" element={<ProductsPage />} />
+            <Route path="products/:id" element={<ProductDetailPage />} />
 
-          {/* ✅ News Routes */}
-          <Route path="news" element={<NewsPage />} />
-          <Route path="news/:id" element={<NewsDetailPage />} />
+            {/* ✅ News Routes */}
+            <Route path="news" element={<NewsPage />} />
+            <Route path="news/:id" element={<NewsDetailPage />} />
 
-          {/* Weather Page */}
-          <Route
-            path="weather"
-            element={
-              <div className="min-h-screen bg-white p-6">
-                <h1 className="text-2xl font-bold text-blue-700 mb-4">Weather</h1>
-                <WeatherWidget />
-              </div>
-            }
-          />
-
-          {/* Farm Connect (Protected for Farmer/Consumer) */}
-          <Route element={<PrivateRoute allowedRoles={["farmer", "consumer"]} />}>
+            {/* Weather Page */}
             <Route
-              path="farm-connect"
+              path="weather"
               element={
-                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-                  <FarmConnectionPage />
+                <div className="min-h-screen bg-white p-6">
+                  <h1 className="text-2xl font-bold text-blue-700 mb-4">Weather</h1>
+                  <WeatherWidget />
                 </div>
               }
             />
-          </Route>
 
-          {/* Protected Routes (All logged users) */}
-          <Route element={<PrivateRoute allowedRoles={["farmer", "consumer", "admin"]} />}>
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="messages" element={<MessagesPage />} />
-            <Route path="messages/:userId" element={<ConversationPage />} />
-            <Route path="orders" element={<OrdersPage />} />
-            <Route path="orders/:id" element={<OrderDetailPage />} />
-          </Route>
+            {/* Farm Connect (Protected for Farmer/Consumer) */}
+            <Route element={<PrivateRoute allowedRoles={["farmer", "consumer"]} />}>
+              <Route
+                path="farm-connect"
+                element={
+                  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+                    <FarmConnectionPage />
+                  </div>
+                }
+              />
+            </Route>
 
-          {/* Consumer Only */}
-          <Route element={<ConsumerRoute />}>
-            <Route path="checkout" element={<CheckoutPage />} />
-          </Route>
+            {/* Protected Routes (All logged users) */}
+            <Route element={<PrivateRoute allowedRoles={["farmer", "consumer", "admin"]} />}>
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="messages" element={<MessagesPage />} />
+              <Route path="messages/:userId" element={<ConversationPage />} />
+              <Route path="orders" element={<OrdersPage />} />
+              <Route path="orders/:id" element={<OrderDetailPage />} />
+            </Route>
 
-          {/* Farmer Only */}
-          <Route element={<FarmerRoute />}>
-            <Route path="farmer/dashboard" element={<FarmerDashboardPage />} />
-            <Route path="farmer/products" element={<FarmerProductsPage />} />
-            <Route path="farmer/products/add" element={<FarmerAddProductPage />} />
-            <Route path="farmer/products/edit/:id" element={<FarmerEditProductPage />} />
-            <Route path="farmer/orders" element={<FarmerOrdersPage />} />
-            <Route path="farmer/profile" element={<FarmerProfilePage />} />
-            <Route path="farmer/farm-connect" element={<FarmConnectionPage />} />
-          </Route>
+            {/* Consumer Only */}
+            <Route element={<ConsumerRoute />}>
+              <Route path="checkout" element={<CheckoutPage />} />
+            </Route>
 
-          {/* Admin Only */}
-          <Route element={<AdminRoute />}>
-            <Route path="admin/dashboard" element={<AdminDashboardPage />} />
-            <Route path="admin/users" element={<AdminUsersPage />} />
-            <Route path="admin/categories" element={<AdminCategoriesPage />} />
-            <Route path="admin/orders" element={<AdminOrdersPage />} />
-          </Route>
+            {/* Farmer Only */}
+            <Route element={<FarmerRoute />}>
+              <Route path="farmer/dashboard" element={<FarmerDashboardPage />} />
+              <Route path="farmer/products" element={<FarmerProductsPage />} />
+              <Route path="farmer/products/add" element={<FarmerAddProductPage />} />
+              <Route path="farmer/products/edit/:id" element={<FarmerEditProductPage />} />
+              <Route path="farmer/orders" element={<FarmerOrdersPage />} />
+              <Route path="farmer/profile" element={<FarmerProfilePage />} />
+              <Route path="farmer/farm-connect" element={<FarmConnectionPage />} />
+            </Route>
 
-          {/* 404 */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
+            {/* Admin Only */}
+            <Route element={<AdminRoute />}>
+              <Route path="admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="admin/users" element={<AdminUsersPage />} />
+              <Route path="admin/categories" element={<AdminCategoriesPage />} />
+              <Route path="admin/orders" element={<AdminOrdersPage />} />
+            </Route>
+
+            {/* 404 */}
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </ProfileLoader>
     </HelmetProvider>
   );
 }
