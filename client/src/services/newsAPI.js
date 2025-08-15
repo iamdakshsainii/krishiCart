@@ -3,7 +3,7 @@
 const API_KEYS = {
   newsapi: import.meta.env.VITE_NEWSAPI_KEY,
   gnews: import.meta.env.VITE_GNEWS_KEY,
-  newsdata: import.meta.env.VITE_NEWSDATAKEY
+  newsdata: import.meta.env.VITE_NEWSDATA_KEY
 };
 
 const API_ENDPOINTS = {
