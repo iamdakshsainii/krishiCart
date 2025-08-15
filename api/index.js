@@ -27,9 +27,9 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
   "https://krishi-cart-hqtxtz1zj-sainidaksh70-gmailcoms-projects.vercel.app",
   "https://krishi-cart-chi.vercel.app",
+  "https://krishi-cart-f3e484tpw-sainidaksh70-gmailcoms-projects.vercel.app", // MUST be included
   "http://localhost:3000",
   "http://localhost:5173",
-  "https://krishi-cart-f3e484tpw-sainidaksh70-gmailcoms-projects.vercel.app",
 ];
 
 // ===== CORS middleware =====
