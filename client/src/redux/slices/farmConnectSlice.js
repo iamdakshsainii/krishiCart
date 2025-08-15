@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -676,4 +676,3 @@ export const {
 } = farmConnectSlice.actions;
 
 export default farmConnectSlice.reducer;
-
