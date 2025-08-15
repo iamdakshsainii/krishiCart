@@ -93,7 +93,7 @@ const FarmerCustomerConnect = () => {
                 <img
                   src={
                     user?.avatar ||
-                    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150"
+                    "https://plus.unsplash.com/premium_photo-1682096259050-361e2989706d?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   }
                   alt="Profile"
                   className="w-12 h-12 rounded-full object-cover border-2 border-green-200"

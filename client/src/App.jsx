@@ -4,7 +4,6 @@ import { Route, Routes } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { HelmetProvider } from "react-helmet-async"; // ✅ SEO wrapper
 import { loadUser } from "./redux/slices/authSlice";
-
 // Layout & Utility
 import Layout from "./components/Layout";
 import PrivateRoute from "./components/PrivateRoute";
@@ -13,7 +12,6 @@ import FarmerRoute from "./components/FarmerRoute";
 import ConsumerRoute from "./components/ConsumerRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import { ProfileLoader } from "./hooks/userProfileLoader"; // ✅ Added ProfileLoader
-
 // Public Pages
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
@@ -24,11 +22,10 @@ import FarmerDetailPage from "./pages/FarmerDetailPage";
 import ProductsPage from "./pages/ProductsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
-
-// ✅ News Pages (correct import to match earlier file creation)
+import FarmConnectFeed from './components/FarmConnectFeed';
+//  News Pages (correct import to match earlier file creation)
 import NewsPage from "./pages/NewsPage";
 import NewsDetailPage from "./pages/farmer/NewsDetailPage";
-
 // Protected Pages
 import ProfilePage from "./pages/ProfilePage";
 import MessagesPage from "./pages/MessagesPage";
@@ -36,7 +33,6 @@ import ConversationPage from "./pages/ConversationPage";
 import OrdersPage from "./pages/OrdersPage";
 import OrderDetailPage from "./pages/OrderDetailPage";
 import CheckoutPage from "./pages/CheckoutPage";
-
 // Farmer Pages
 import FarmerDashboardPage from "./pages/farmer/DashboardPage";
 import FarmerProductsPage from "./pages/farmer/ProductsPage";
@@ -45,20 +41,17 @@ import FarmerEditProductPage from "./pages/farmer/EditProductPage";
 import FarmerOrdersPage from "./pages/farmer/OrdersPage";
 import FarmerProfilePage from "./pages/farmer/ProfilePage";
 import FarmConnectionPage from "./pages/farmer/FarmConnectionPage";
-
 // Admin Pages
 import AdminDashboardPage from "./pages/admin/DashboardPage";
 import AdminUsersPage from "./pages/admin/UsersPage";
 import AdminCategoriesPage from "./pages/admin/CategoriesPage";
 import AdminOrdersPage from "./pages/admin/OrdersPage";
-
 // Extras
 import WeatherWidget from "./components/WeatherWidget";
 import FarmerCustomerConnect from "./components/FarmerCustomerConnect";
 
 function App() {
   const dispatch = useDispatch();
-
   useEffect(() => {
     dispatch(loadUser());
   }, [dispatch]);
@@ -78,11 +71,9 @@ function App() {
             <Route path="farmers/:id" element={<FarmerDetailPage />} />
             <Route path="products" element={<ProductsPage />} />
             <Route path="products/:id" element={<ProductDetailPage />} />
-
             {/* ✅ News Routes */}
             <Route path="news" element={<NewsPage />} />
             <Route path="news/:id" element={<NewsDetailPage />} />
-
             {/* Weather Page */}
             <Route
               path="weather"
@@ -93,7 +84,6 @@ function App() {
                 </div>
               }
             />
-
             {/* Farm Connect (Protected for Farmer/Consumer) */}
             <Route element={<PrivateRoute allowedRoles={["farmer", "consumer"]} />}>
               <Route
@@ -105,7 +95,6 @@ function App() {
                 }
               />
             </Route>
-
             {/* Protected Routes (All logged users) */}
             <Route element={<PrivateRoute allowedRoles={["farmer", "consumer", "admin"]} />}>
               <Route path="profile" element={<ProfilePage />} />
@@ -114,12 +103,10 @@ function App() {
               <Route path="orders" element={<OrdersPage />} />
               <Route path="orders/:id" element={<OrderDetailPage />} />
             </Route>
-
             {/* Consumer Only */}
             <Route element={<ConsumerRoute />}>
               <Route path="checkout" element={<CheckoutPage />} />
             </Route>
-
             {/* Farmer Only */}
             <Route element={<FarmerRoute />}>
               <Route path="farmer/dashboard" element={<FarmerDashboardPage />} />
@@ -130,7 +117,6 @@ function App() {
               <Route path="farmer/profile" element={<FarmerProfilePage />} />
               <Route path="farmer/farm-connect" element={<FarmConnectionPage />} />
             </Route>
-
             {/* Admin Only */}
             <Route element={<AdminRoute />}>
               <Route path="admin/dashboard" element={<AdminDashboardPage />} />
@@ -138,11 +124,13 @@ function App() {
               <Route path="admin/categories" element={<AdminCategoriesPage />} />
               <Route path="admin/orders" element={<AdminOrdersPage />} />
             </Route>
-
             {/* 404 */}
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
+
+        {/* Add FarmConnectFeed here so it appears on all pages */}
+        <FarmConnectFeed />
       </ProfileLoader>
     </HelmetProvider>
   );

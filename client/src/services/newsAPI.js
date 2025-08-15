@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // services/newsAPI.js
 const API_KEYS = {
   newsapi: import.meta.env.VITE_NEWSAPI_KEY,

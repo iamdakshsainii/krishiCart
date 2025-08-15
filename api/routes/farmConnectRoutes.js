@@ -32,10 +32,9 @@ router.get("/stories", getStories);
 router.post("/stories/:id/like", verifyToken, likeStory);
 
 // ===== Farmer profile routes =====
-router.get("/farmers/:id", getFarmerProfile);                              // ✅ Get farmer profile (Public)
-router.put("/farmers/:id", verifyToken, updateFarmerProfile);             // ✅ Update farmer profile (Private)
-router.post("/farmers/:id/photos", verifyToken, uploadFarmerPhotos);      // ✅ Upload photos (Private)
-
+router.get("/farmers/:id", getFarmerProfile);                             
+router.put("/farmers/:id", verifyToken, updateFarmerProfile);
+router.post("/farmers/:id/photos", verifyToken, uploadFarmerPhotos);
 module.exports = router;
 
 // Notes:

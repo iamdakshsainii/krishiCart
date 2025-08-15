@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // redux/slices/newsSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { newsService } from '../../services/newsAPI';
