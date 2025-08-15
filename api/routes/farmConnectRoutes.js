@@ -1,20 +1,20 @@
-// Your existing route structure in the main route file is correct:
-
 const express = require("express");
 const router = express.Router();
 
 const {
   createPost,
   getPosts,
+  deletePost,          // ✅ Add this import
   likePost,
   addComment,
   sharePost,
   createStory,
   getStories,
+  deleteStory,         // ✅ Add this import
   likeStory,
-  getFarmerProfile,        // ✅ Already imported
-  updateFarmerProfile,     // ✅ Already imported
-  uploadFarmerPhotos       // ✅ Already imported
+  getFarmerProfile,
+  updateFarmerProfile,
+  uploadFarmerPhotos
 } = require("../controllers/farmConnectController");
 
 const { verifyToken, isFarmer } = require("../middleware/authMiddleware");
@@ -22,6 +22,7 @@ const { verifyToken, isFarmer } = require("../middleware/authMiddleware");
 // ===== Posts routes =====
 router.post("/posts", verifyToken, isFarmer, createPost);
 router.get("/posts", getPosts);
+router.delete("/posts/:id", verifyToken, deletePost);        // ✅ Add this route
 router.post("/posts/:id/like", verifyToken, likePost);
 router.post("/posts/:id/comments", verifyToken, addComment);
 router.post("/posts/:id/share", verifyToken, sharePost);
@@ -29,17 +30,12 @@ router.post("/posts/:id/share", verifyToken, sharePost);
 // ===== Stories routes =====
 router.post("/stories", verifyToken, isFarmer, createStory);
 router.get("/stories", getStories);
+router.delete("/stories/:id", verifyToken, deleteStory);     // ✅ Add this route
 router.post("/stories/:id/like", verifyToken, likeStory);
 
 // ===== Farmer profile routes =====
-router.get("/farmers/:id", getFarmerProfile);                             
+router.get("/farmers/:id", getFarmerProfile);
 router.put("/farmers/:id", verifyToken, updateFarmerProfile);
 router.post("/farmers/:id/photos", verifyToken, uploadFarmerPhotos);
-module.exports = router;
 
-// Notes:
-// 1. The routes are correctly set up
-// 2. GET /farmers/:id is public (anyone can view farmer profiles)
-// 3. PUT /farmers/:id requires authentication (only authenticated users can update)
-// 4. POST /farmers/:id/photos requires authentication (only authenticated users can upload photos)
-// 5. Additional role-based authorization is handled inside the controller functions
+module.exports = router;

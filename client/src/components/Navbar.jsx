@@ -21,14 +21,12 @@ import {
   FaChevronLeft,
 } from "react-icons/fa";
 
-const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(true);
+const Navbar = ({ isMenuOpen, setIsMenuOpen }) => {
+  // Removed local isMenuOpen state, now controlled via props
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.cart);
   const { canAccessFarmConnect, isFarmer, isConsumer, isAdmin } = usePermissions();
@@ -77,7 +75,7 @@ const Navbar = () => {
   const getVisibleNavItems = () => {
     return navItems.filter((item) => {
       if (item.public) return true;
-      if (item.requiresAuth && !isAuthenticated) return true;
+      if (item.requiresAuth && !isAuthenticated) return false;
       if (item.allowedRoles && isAuthenticated) {
         return item.allowedRoles.includes(user?.role);
       }
@@ -94,11 +92,15 @@ const Navbar = () => {
     >
       {/* Logo + Toggle in same row */}
       <div
-        className={`flex items-center ${isMenuOpen ? "justify-between px-4" : "justify-center"} py-4 border-b border-blue-100`}
+        className={`flex items-center ${
+          isMenuOpen ? "justify-between px-4" : "justify-center"
+        } py-4 border-b border-blue-100`}
       >
         <Link
           to="/"
-          className={`flex items-center ${isMenuOpen ? "space-x-3" : "justify-center"} hover:opacity-80`}
+          className={`flex items-center ${
+            isMenuOpen ? "space-x-3" : "justify-center"
+          } hover:opacity-80`}
         >
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-xl blur opacity-25"></div>
@@ -118,6 +120,7 @@ const Navbar = () => {
         <button
           onClick={toggleMenu}
           className="p-2 rounded-lg hover:bg-blue-50 text-blue-700"
+          aria-label="Toggle menu"
         >
           {isMenuOpen ? <FaChevronLeft /> : <FaBars />}
         </button>
@@ -135,7 +138,6 @@ const Navbar = () => {
               isAuthenticated &&
               !canAccessFarmConnect() &&
               item.name === "Farm Connect";
-
             const handleClick = (e) => {
               if (item.name === "Farm Connect" && !isAuthenticated) {
                 e.preventDefault();
@@ -144,7 +146,6 @@ const Navbar = () => {
               }
               if (hasNoAccess) e.preventDefault();
             };
-
             return (
               <li key={item.name}>
                 <Link
@@ -152,18 +153,22 @@ const Navbar = () => {
                   onClick={handleClick}
                   title={!isMenuOpen ? item.name : ""}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition-all duration-200 relative
-                    ${isActive
-                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
-                      : isDisabled || hasNoAccess
-                      ? "text-gray-400 cursor-not-allowed"
-                      : "text-blue-800 hover:bg-blue-50"}`}
+                    ${
+                      isActive
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
+                        : isDisabled || hasNoAccess
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-blue-800 hover:bg-blue-50"
+                    }`}
                 >
                   <Icon
-                    className={`text-lg ${isActive
-                      ? "text-white"
-                      : isDisabled || hasNoAccess
-                      ? "text-gray-400"
-                      : "text-blue-600"}`}
+                    className={`text-lg ${
+                      isActive
+                        ? "text-white"
+                        : isDisabled || hasNoAccess
+                        ? "text-gray-400"
+                        : "text-blue-600"
+                    }`}
                   />
                   {isMenuOpen && <span>{item.name}</span>}
                   {(isDisabled || hasNoAccess) &&
@@ -188,19 +193,25 @@ const Navbar = () => {
                 to="/checkout"
                 title={!isMenuOpen ? "Cart" : ""}
                 className={`flex items-center justify-between px-4 py-3 rounded-lg font-semibold transition-all duration-200
-                  ${isActiveLink("/checkout")
-                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
-                    : "text-blue-800 hover:bg-blue-50"}`}
+                  ${
+                    isActiveLink("/checkout")
+                      ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
+                      : "text-blue-800 hover:bg-blue-50"
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <FaShoppingCart
-                    className={`text-lg ${isActiveLink("/checkout") ? "text-white" : "text-blue-600"}`}
+                    className={`text-lg ${
+                      isActiveLink("/checkout") ? "text-white" : "text-blue-600"
+                    }`}
                   />
                   {isMenuOpen && <span>Cart</span>}
                 </div>
                 {cartItems.length > 0 && (
                   <span
-                    className={`bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-bounce ${!isMenuOpen ? "mx-auto" : ""}`}
+                    className={`bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-2 py-1 rounded-full font-bold shadow-lg animate-bounce ${
+                      !isMenuOpen ? "mx-auto" : ""
+                    }`}
                   >
                     {cartItems.length}
                   </span>
@@ -218,7 +229,9 @@ const Navbar = () => {
             <button
               onClick={toggleProfile}
               title={!isMenuOpen ? user?.name : ""}
-              className={`w-full flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-200 ${!isMenuOpen ? "justify-center" : ""}`}
+              className={`w-full flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-200 ${
+                !isMenuOpen ? "justify-center" : ""
+              }`}
             >
               <div className="relative w-10 h-10 rounded-full bg-blue-800 flex items-center justify-center shadow-lg">
                 {isAdmin() && (
@@ -238,7 +251,6 @@ const Navbar = () => {
                 </div>
               )}
             </button>
-
             {isProfileOpen && isMenuOpen && (
               <div className="mt-3 space-y-2 bg-white rounded-lg shadow-lg border border-blue-100 p-2">
                 {isAdmin() && (

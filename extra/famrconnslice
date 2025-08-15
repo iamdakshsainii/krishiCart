@@ -3,7 +3,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 const API_URL = import.meta.env.VITE_API_URL;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 const getAuthConfig = (getState, isMultipart = false) => {
   const token = getState().auth.token;
   return {
@@ -13,15 +13,13 @@ const getAuthConfig = (getState, isMultipart = false) => {
     }
   };
 };
+
 const handleApiError = (error, customMessage) => {
-  const message =
-    customMessage ||
-    error.response?.data?.message ||
-    error.message ||
-    'An unexpected error occurred';
+  const message = customMessage || error.response?.data?.message || error.message || 'An unexpected error occurred';
   toast.error(message);
   return message;
 };
+
 const createApiCall = async (apiFunction, retries = 3) => {
   for (let i = 0; i < retries; i++) {
     try {
@@ -29,16 +27,16 @@ const createApiCall = async (apiFunction, retries = 3) => {
     } catch (error) {
       if (i === retries - 1) throw error;
       if (error.response?.status >= 500) {
-        await new Promise(resolve =>
-          setTimeout(resolve, 1000 * (i + 1))
-        );
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
         continue;
       }
       throw error;
     }
   }
 };
-/* -------------------- ASYNC THUNKS ----------------------- */
+
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 export const createPost = createAsyncThunk(
   'farmConnect/createPost',
   async (formData, { getState, rejectWithValue, dispatch }) => {
@@ -46,7 +44,7 @@ export const createPost = createAsyncThunk(
       const tempPost = {
         _id: `temp-${Date.now()}`,
         content: formData.get('content'),
-        user: getState().auth.user,
+        author: getState().auth.user,
         createdAt: new Date().toISOString(),
         likes: [],
         comments: [],
@@ -70,6 +68,7 @@ export const createPost = createAsyncThunk(
     }
   }
 );
+
 export const createStory = createAsyncThunk(
   'farmConnect/createStory',
   async (formData, { getState, rejectWithValue, dispatch }) => {
@@ -78,7 +77,7 @@ export const createStory = createAsyncThunk(
         _id: `temp-story-${Date.now()}`,
         title: formData.get('title'),
         content: formData.get('content'),
-        user: getState().auth.user,
+        author: getState().auth.user,
         createdAt: new Date().toISOString(),
         isTemporary: true
       };
@@ -100,6 +99,7 @@ export const createStory = createAsyncThunk(
     }
   }
 );
+
 export const likePost = createAsyncThunk(
   'farmConnect/likePost',
   async (postId, { getState, rejectWithValue, dispatch }) => {
@@ -113,13 +113,12 @@ export const likePost = createAsyncThunk(
       );
       return { postId, updatedPost: data.data };
     } catch (error) {
-      dispatch(
-        toggleLikeOptimistic({ postId, userId: getState().auth.user._id })
-      );
+      dispatch(toggleLikeOptimistic({ postId, userId: getState().auth.user._id }));
       return rejectWithValue(handleApiError(error, 'Failed to update like'));
     }
   }
 );
+
 export const likeStory = createAsyncThunk(
   'farmConnect/likeStory',
   async (storyId, { getState, rejectWithValue, dispatch }) => {
@@ -131,15 +130,15 @@ export const likeStory = createAsyncThunk(
         {},
         getAuthConfig(getState)
       );
+      toast.success('Story like updated! ❤️');
       return { storyId, updatedStory: data.data };
     } catch (error) {
-      dispatch(
-        toggleLikeStoryOptimistic({ storyId, userId: getState().auth.user._id })
-      );
+      dispatch(toggleLikeStoryOptimistic({ storyId, userId: getState().auth.user._id }));
       return rejectWithValue(handleApiError(error, 'Failed to update story like'));
     }
   }
 );
+
 export const addComment = createAsyncThunk(
   'farmConnect/addComment',
   async ({ postId, content }, { getState, rejectWithValue, dispatch }) => {
@@ -147,7 +146,7 @@ export const addComment = createAsyncThunk(
       const tempComment = {
         _id: `temp-comment-${Date.now()}`,
         content,
-        user: getState().auth.user,
+        author: getState().auth.user,
         createdAt: new Date().toISOString(),
         isTemporary: true
       };
@@ -161,52 +160,12 @@ export const addComment = createAsyncThunk(
       toast.success('Comment added! 💬');
       return { postId, newComment: data.data };
     } catch (error) {
-      dispatch(
-        removeOptimisticComment({
-          postId,
-          commentId: `temp-comment-${Date.now()}`
-        })
-      );
+      dispatch(removeOptimisticComment({ postId, commentId: `temp-comment-${Date.now()}` }));
       return rejectWithValue(handleApiError(error, 'Failed to add comment'));
     }
   }
 );
-export const deletePost = createAsyncThunk(
-  'farmConnect/deletePost',
-  async (postId, { getState, rejectWithValue, dispatch }) => {
-    try {
-      dispatch(removePostOptimistic(postId));
-      await createApiCall(async () => {
-        await axios.delete(
-          `${API_URL}/farm-connect/posts/${postId}`,
-          getAuthConfig(getState)
-        );
-      });
-      return postId;
-    } catch (error) {
-      dispatch(restorePostOptimistic(postId));
-      return rejectWithValue(handleApiError(error, 'Failed to delete post'));
-    }
-  }
-);
-export const deleteStory = createAsyncThunk(
-  'farmConnect/deleteStory',
-  async (storyId, { getState, rejectWithValue, dispatch }) => {
-    try {
-      dispatch(removeStoryOptimistic(storyId));
-      await createApiCall(async () => {
-        await axios.delete(
-          `${API_URL}/farm-connect/stories/${storyId}`,
-          getAuthConfig(getState)
-        );
-      });
-      return storyId;
-    } catch (error) {
-      dispatch(restoreStoryOptimistic(storyId));
-      return rejectWithValue(handleApiError(error, 'Failed to delete story'));
-    }
-  }
-);
+
 export const getFarmerProfile = createAsyncThunk(
   'farmConnect/getFarmerProfile',
   async (farmerId, { getState, rejectWithValue }) => {
@@ -214,10 +173,7 @@ export const getFarmerProfile = createAsyncThunk(
       const state = getState().farmConnect;
       const cacheKey = `farmer-${farmerId}`;
       const cachedProfile = state.profileCache[cacheKey];
-      if (
-        cachedProfile &&
-        Date.now() - cachedProfile.timestamp < CACHE_DURATION
-      ) {
+      if (cachedProfile && Date.now() - cachedProfile.timestamp < CACHE_DURATION) {
         return { profile: cachedProfile.data, fromCache: true };
       }
       const { data } = await axios.get(
@@ -226,12 +182,11 @@ export const getFarmerProfile = createAsyncThunk(
       );
       return { profile: data.data, cacheKey, fromCache: false };
     } catch (error) {
-      return rejectWithValue(
-        handleApiError(error, 'Failed to fetch farmer profile')
-      );
+      return rejectWithValue(handleApiError(error, 'Failed to fetch farmer profile'));
     }
   }
 );
+
 export const fetchPosts = createAsyncThunk(
   'farmConnect/fetchPosts',
   async ({ page = 1, limit = 10, refresh = false } = {}, { getState, rejectWithValue }) => {
@@ -250,6 +205,7 @@ export const fetchPosts = createAsyncThunk(
     }
   }
 );
+
 export const fetchStories = createAsyncThunk(
   'farmConnect/fetchStories',
   async ({ page = 1, limit = 10, refresh = false } = {}, { getState, rejectWithValue }) => {
@@ -268,12 +224,10 @@ export const fetchStories = createAsyncThunk(
     }
   }
 );
-/* ----------------- Initial State --------------------- */
+
 const initialState = {
   posts: [],
   stories: [],
-  deletedPosts: [],
-  deletedStories: [],
   currentUser: null,
   farmerProfile: null,
   activeTab: 'posts',
@@ -282,14 +236,16 @@ const initialState = {
   postsLoading: false,
   storiesLoading: false,
   createLoading: false,
-  deleteLoading: {},
   likeLoading: {},
   commentLoading: {},
   profileLoading: false,
   error: null,
   errors: {},
   profileCache: {},
-  lastFetched: { posts: null, stories: null },
+  lastFetched: {
+    posts: null,
+    stories: null
+  },
   shouldRefreshPosts: false,
   shouldRefreshStories: false,
   pagination: {
@@ -304,43 +260,43 @@ const initialState = {
   isOnline: navigator.onLine,
   retryQueue: []
 };
-/* ------------------ Slice -------------------- */
+
 const farmConnectSlice = createSlice({
   name: 'farmConnect',
   initialState,
   reducers: {
-    setCurrentUser(state, action) {
+    setCurrentUser: (state, action) => {
       state.currentUser = action.payload;
     },
-    setActiveTab(state, action) {
+    setActiveTab: (state, action) => {
       state.activeTab = action.payload;
     },
-    clearError(state) {
+    clearError: (state) => {
       state.error = null;
       state.errors = {};
     },
-    clearFarmerProfile(state) {
+    clearFarmerProfile: (state) => {
       state.farmerProfile = null;
     },
-    setShowCreatePostModal(state, action) {
+    setShowCreatePostModal: (state, action) => {
       state.showCreatePostModal = action.payload;
     },
-    setShowCreateStoryModal(state, action) {
+    setShowCreateStoryModal: (state, action) => {
       state.showCreateStoryModal = action.payload;
     },
-    addOptimisticPost(state, action) {
+    addOptimisticPost: (state, action) => {
       state.posts.unshift(action.payload);
     },
-    removeOptimisticPost(state, action) {
+    removeOptimisticPost: (state, action) => {
       state.posts = state.posts.filter(post => post._id !== action.payload);
     },
-    addOptimisticStory(state, action) {
+    addOptimisticStory: (state, action) => {
       state.stories.unshift(action.payload);
     },
-    removeOptimisticStory(state, action) {
+    removeOptimisticStory: (state, action) => {
       state.stories = state.stories.filter(story => story._id !== action.payload);
     },
-    addOptimisticComment(state, action) {
+    addOptimisticComment: (state, action) => {
       const { postId, comment } = action.payload;
       const post = state.posts.find(p => p._id === postId);
       if (post) {
@@ -348,21 +304,19 @@ const farmConnectSlice = createSlice({
         post.comments.push(comment);
       }
     },
-    removeOptimisticComment(state, action) {
+    removeOptimisticComment: (state, action) => {
       const { postId, commentId } = action.payload;
       const post = state.posts.find(p => p._id === postId);
       if (post && post.comments) {
         post.comments = post.comments.filter(c => c._id !== commentId);
       }
     },
-    toggleLikeOptimistic(state, action) {
+    toggleLikeOptimistic: (state, action) => {
       const { postId, userId } = action.payload;
       const post = state.posts.find(p => p._id === postId);
       if (post) {
         post.likes = post.likes || [];
-        const likeIndex = post.likes.findIndex(like =>
-          (typeof like === 'string' ? like === userId : like?.user === userId)
-        );
+        const likeIndex = post.likes.findIndex(like => like.user === userId);
         if (likeIndex >= 0) {
           post.likes.splice(likeIndex, 1);
         } else {
@@ -370,14 +324,12 @@ const farmConnectSlice = createSlice({
         }
       }
     },
-    toggleLikeStoryOptimistic(state, action) {
+    toggleLikeStoryOptimistic: (state, action) => {
       const { storyId, userId } = action.payload;
       const story = state.stories.find(s => s._id === storyId);
       if (story) {
         story.likes = story.likes || [];
-        const index = story.likes.findIndex(like =>
-          typeof like === 'string' ? like === userId : like.user === userId
-        );
+        const index = story.likes.findIndex(like => (typeof like === 'string' ? like === userId : like.user === userId));
         if (index >= 0) {
           story.likes.splice(index, 1);
         } else {
@@ -385,74 +337,36 @@ const farmConnectSlice = createSlice({
         }
       }
     },
-    removePostOptimistic(state, action) {
-      const postId = action.payload;
-      const postIndex = state.posts.findIndex(p => p._id === postId);
-      if (postIndex >= 0) {
-        // Store the deleted post for potential restoration
-        state.deletedPosts.push(state.posts[postIndex]);
-        state.posts.splice(postIndex, 1);
-      }
-    },
-    restorePostOptimistic(state, action) {
-      const postId = action.payload;
-      const deletedPostIndex = state.deletedPosts.findIndex(p => p._id === postId);
-      if (deletedPostIndex >= 0) {
-        // Restore the post to its original position (or add to beginning)
-        const restoredPost = state.deletedPosts[deletedPostIndex];
-        state.posts.unshift(restoredPost);
-        state.deletedPosts.splice(deletedPostIndex, 1);
-      }
-    },
-    removeStoryOptimistic(state, action) {
-      const storyId = action.payload;
-      const storyIndex = state.stories.findIndex(s => s._id === storyId);
-      if (storyIndex >= 0) {
-        // Store the deleted story for potential restoration
-        state.deletedStories.push(state.stories[storyIndex]);
-        state.stories.splice(storyIndex, 1);
-      }
-    },
-    restoreStoryOptimistic(state, action) {
-      const storyId = action.payload;
-      const deletedStoryIndex = state.deletedStories.findIndex(s => s._id === storyId);
-      if (deletedStoryIndex >= 0) {
-        // Restore the story to its original position (or add to beginning)
-        const restoredStory = state.deletedStories[deletedStoryIndex];
-        state.stories.unshift(restoredStory);
-        state.deletedStories.splice(deletedStoryIndex, 1);
-      }
-    },
-    invalidatePostsCache(state) {
+    invalidatePostsCache: (state) => {
       state.shouldRefreshPosts = true;
     },
-    invalidateStoriesCache(state) {
+    invalidateStoriesCache: (state) => {
       state.shouldRefreshStories = true;
     },
-    clearCache(state) {
+    clearCache: (state) => {
       state.profileCache = {};
       state.shouldRefreshPosts = true;
       state.shouldRefreshStories = true;
     },
-    setPostsFilter(state, action) {
+    setPostsFilter: (state, action) => {
       state.filters.posts = { ...state.filters.posts, ...action.payload };
     },
-    setStoriesFilter(state, action) {
+    setStoriesFilter: (state, action) => {
       state.filters.stories = { ...state.filters.stories, ...action.payload };
     },
-    setSearchQuery(state, action) {
+    setSearchQuery: (state, action) => {
       state.searchQuery = action.payload;
     },
-    setOnlineStatus(state, action) {
+    setOnlineStatus: (state, action) => {
       state.isOnline = action.payload;
     },
-    addToRetryQueue(state, action) {
+    addToRetryQueue: (state, action) => {
       state.retryQueue.push(action.payload);
     },
-    clearRetryQueue(state) {
+    clearRetryQueue: (state) => {
       state.retryQueue = [];
     },
-    updateMultiplePosts(state, action) {
+    updateMultiplePosts: (state, action) => {
       const updates = action.payload;
       updates.forEach(({ postId, updates }) => {
         const postIndex = state.posts.findIndex(p => p._id === postId);
@@ -496,12 +410,9 @@ const farmConnectSlice = createSlice({
         }
         state.showCreateStoryModal = false;
       })
-            .addCase(createStory.rejected, (state, action) => {
+      .addCase(createStory.rejected, (state, action) => {
         state.createLoading = false;
         state.error = action.payload;
-      })
-      .addCase(likePost.pending, (state, action) => {
-        state.likeLoading[action.meta.arg] = true;
       })
       .addCase(likePost.fulfilled, (state, action) => {
         const { postId, updatedPost } = action.payload;
@@ -512,8 +423,6 @@ const farmConnectSlice = createSlice({
         state.likeLoading[postId] = false;
       })
       .addCase(likePost.rejected, (state, action) => {
-        const postId = action.meta.arg;
-        state.likeLoading[postId] = false;
         console.error('Like failed:', action.payload);
       })
       .addCase(likeStory.pending, (state, action) => {
@@ -531,9 +440,6 @@ const farmConnectSlice = createSlice({
         const storyId = action.meta.arg;
         state.likeLoading[storyId] = false;
       })
-      .addCase(addComment.pending, (state, action) => {
-        state.commentLoading[action.meta.arg.postId] = true;
-      })
       .addCase(addComment.fulfilled, (state, action) => {
         const { postId, newComment } = action.payload;
         const post = state.posts.find(p => p._id === postId);
@@ -541,38 +447,9 @@ const farmConnectSlice = createSlice({
           post.comments = post.comments.filter(c => !c.isTemporary);
           post.comments.push(newComment);
         }
-        state.commentLoading[postId] = false;
       })
       .addCase(addComment.rejected, (state, action) => {
-        const postId = action.meta.arg.postId;
-        state.commentLoading[postId] = false;
         console.error('Comment failed:', action.payload);
-      })
-      .addCase(deletePost.pending, (state, action) => {
-        state.deleteLoading[action.meta.arg] = true;
-      })
-      .addCase(deletePost.fulfilled, (state, action) => {
-        const postId = action.payload;
-        state.deleteLoading[postId] = false;
-        state.deletedPosts = state.deletedPosts.filter(p => p._id !== postId);
-      })
-      .addCase(deletePost.rejected, (state, action) => {
-        const postId = action.meta.arg;
-        state.deleteLoading[postId] = false;
-        state.error = action.payload;
-      })
-      .addCase(deleteStory.pending, (state, action) => {
-        state.deleteLoading[action.meta.arg] = true;
-      })
-      .addCase(deleteStory.fulfilled, (state, action) => {
-        const storyId = action.payload;
-        state.deleteLoading[storyId] = false;
-        state.deletedStories = state.deletedStories.filter(s => s._id !== storyId);
-      })
-      .addCase(deleteStory.rejected, (state, action) => {
-        const storyId = action.meta.arg;
-        state.deleteLoading[storyId] = false;
-        state.error = action.payload;
       })
       .addCase(getFarmerProfile.pending, (state) => {
         state.profileLoading = true;
@@ -659,10 +536,6 @@ export const {
   removeOptimisticComment,
   toggleLikeOptimistic,
   toggleLikeStoryOptimistic,
-  removePostOptimistic,
-  restorePostOptimistic,
-  removeStoryOptimistic,
-  restoreStoryOptimistic,
   invalidatePostsCache,
   invalidateStoriesCache,
   clearCache,
@@ -676,4 +549,3 @@ export const {
 } = farmConnectSlice.actions;
 
 export default farmConnectSlice.reducer;
-

@@ -27,17 +27,14 @@ const FarmConnectionPage = () => {
     error,
   } = useSelector((state) => state.farmConnect);
   const { user } = useSelector((state) => state.auth);
-
   // Deduplicate posts based on _id
   const uniquePosts = useMemo(() =>
     posts.filter((post, idx, arr) => arr.findIndex(p => p._id === post._id) === idx)
   , [posts]);
-
   // Deduplicate stories based on _id
   const uniqueStories = useMemo(() =>
     stories.filter((story, idx, arr) => arr.findIndex(s => s._id === story._id) === idx)
   , [stories]);
-
   useEffect(() => {
     const action = activeTab === 'posts' ? fetchPosts() : fetchStories();
     dispatch(action);
@@ -45,11 +42,9 @@ const FarmConnectionPage = () => {
       // Optionally cancel pending requests here if implemented
     };
   }, [dispatch, activeTab]);
-
   const handleCreatePost = () => dispatch(setShowCreatePostModal(true));
   const handleCreateStory = () => dispatch(setShowCreateStoryModal(true));
   const handleTabChange = (tab) => dispatch(setActiveTab(tab));
-
   const renderedPosts = useMemo(() =>
     uniquePosts.map((post) => (
       <PostCard
@@ -60,7 +55,6 @@ const FarmConnectionPage = () => {
     )),
     [uniquePosts]
   );
-
   const renderedStories = useMemo(() =>
     uniqueStories.map((story) => (
       <StoryCard
@@ -71,7 +65,6 @@ const FarmConnectionPage = () => {
     )),
     [uniqueStories]
   );
-
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
@@ -99,7 +92,6 @@ const FarmConnectionPage = () => {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-emerald-50">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -149,7 +141,6 @@ const FarmConnectionPage = () => {
             </div>
           </div>
         </div>
-
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-200">
@@ -186,7 +177,6 @@ const FarmConnectionPage = () => {
             </div>
           </div>
         </div>
-
         {/* Tab Navigation */}
         <div className="bg-white rounded-2xl shadow-lg p-2 mb-8">
           <div className="flex relative">
@@ -224,7 +214,6 @@ const FarmConnectionPage = () => {
             </button>
           </div>
         </div>
-
         {/* Content Section */}
         <div className="relative">
           {postsLoading || storiesLoading ? (
@@ -271,7 +260,6 @@ const FarmConnectionPage = () => {
             </div>
           )}
         </div>
-
         {/* Floating Action Buttons for Mobile */}
         <div className="fixed bottom-6 right-6 flex flex-col gap-3 md:hidden">
           <button

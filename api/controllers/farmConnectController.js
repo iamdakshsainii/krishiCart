@@ -19,11 +19,9 @@ const validateUploadedFile = (file, allowedTypes = ['image/jpeg', 'image/png', '
   if (!allowedTypes.includes(file.mimetype)) {
     throw new Error(`Invalid file type. Allowed types: ${allowedTypes.join(', ')}`);
   }
-
   if (file.size > maxSize) {
     throw new Error(`File size too large. Maximum size: ${maxSize / (1024 * 1024)}MB`);
   }
-
   return true;
 };
 
@@ -81,11 +79,50 @@ const getPosts = asyncHandler(async (req, res) => {
   }
 });
 
+// = DELETE POST = (NEW)
+const deletePost = asyncHandler(async (req, res) => {
+  try {
+    validateId(req.params.id, 'post ID');
+
+    if (!req.user || !req.user._id) {
+      res.status(401);
+      throw new Error('User not authenticated');
+    }
+
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      res.status(404);
+      throw new Error('Post not found');
+    }
+
+    // Check if user owns the post or is admin
+    const isOwner = post.user.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      res.status(403);
+      throw new Error('Not authorized to delete this post');
+    }
+
+    await Post.findByIdAndDelete(req.params.id);
+
+    res.json({
+      success: true,
+      message: 'Post deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error in deletePost:', error);
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Error deleting post'
+    });
+  }
+});
+
 // = LIKE/UNLIKE POST =
 const likePost = asyncHandler(async (req, res) => {
   try {
     validateId(req.params.id, 'post ID');
-
     if (!req.user || !req.user._id) {
       res.status(401);
       throw new Error('User not authenticated');
@@ -131,7 +168,6 @@ const addComment = asyncHandler(async (req, res) => {
     }
 
     validateId(req.params.id, 'post ID');
-
     if (!req.user || !req.user._id) {
       res.status(401);
       throw new Error('User not authenticated');
@@ -171,7 +207,6 @@ const addComment = asyncHandler(async (req, res) => {
 const sharePost = asyncHandler(async (req, res) => {
   try {
     validateId(req.params.id, 'post ID');
-
     const post = await Post.findByIdAndUpdate(
       req.params.id,
       { $inc: { shares: 1 } },
@@ -295,11 +330,50 @@ const getStories = asyncHandler(async (req, res) => {
   }
 });
 
+// = DELETE STORY = (NEW)
+const deleteStory = asyncHandler(async (req, res) => {
+  try {
+    validateId(req.params.id, 'story ID');
+
+    if (!req.user || !req.user._id) {
+      res.status(401);
+      throw new Error('User not authenticated');
+    }
+
+    const story = await Story.findById(req.params.id);
+    if (!story) {
+      res.status(404);
+      throw new Error('Story not found');
+    }
+
+    // Check if user owns the story or is admin
+    const isOwner = story.user.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      res.status(403);
+      throw new Error('Not authorized to delete this story');
+    }
+
+    await Story.findByIdAndDelete(req.params.id);
+
+    res.json({
+      success: true,
+      message: 'Story deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error in deleteStory:', error);
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Error deleting story'
+    });
+  }
+});
+
 // = LIKE/UNLIKE STORY =
 const likeStory = asyncHandler(async (req, res) => {
   try {
     validateId(req.params.id, 'story ID');
-
     if (!req.user || !req.user._id) {
       res.status(401);
       throw new Error('User not authenticated');
@@ -339,7 +413,6 @@ const likeStory = asyncHandler(async (req, res) => {
 const getFarmerProfile = asyncHandler(async (req, res) => {
   try {
     console.log('Getting farmer profile for ID:', req.params.id);
-
     validateId(req.params.id, 'farmer ID');
 
     const farmer = await User.findById(req.params.id)
@@ -547,7 +620,6 @@ const updateFarmerProfile = asyncHandler(async (req, res) => {
         profile: populatedProfile
       }
     });
-
   } catch (error) {
     console.error('Profile update error:', error);
 
@@ -578,7 +650,6 @@ const updateFarmerProfile = asyncHandler(async (req, res) => {
 const uploadFarmerPhotos = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
-
     validateId(id, 'farmer ID');
 
     if (!req.user || req.user._id.toString() !== id) {
@@ -596,7 +667,6 @@ const uploadFarmerPhotos = asyncHandler(async (req, res) => {
       const profilePhoto = Array.isArray(req.files.profilePhoto)
         ? req.files.profilePhoto[0]
         : req.files.profilePhoto;
-
       try {
         validateUploadedFile(profilePhoto);
         profilePhotoPath = profilePhoto.path || profilePhoto.tempFilePath;
@@ -613,7 +683,6 @@ const uploadFarmerPhotos = asyncHandler(async (req, res) => {
       const coverPhoto = Array.isArray(req.files.coverPhoto)
         ? req.files.coverPhoto[0]
         : req.files.coverPhoto;
-
       try {
         validateUploadedFile(coverPhoto);
         coverPhotoPath = coverPhoto.path || coverPhoto.tempFilePath;
@@ -647,7 +716,6 @@ const uploadFarmerPhotos = asyncHandler(async (req, res) => {
         coverPhoto: coverPhotoPath
       }
     });
-
   } catch (error) {
     console.error('Photo upload error:', error);
     res.status(error.statusCode || 500).json({
@@ -660,11 +728,13 @@ const uploadFarmerPhotos = asyncHandler(async (req, res) => {
 module.exports = {
   createPost,
   getPosts,
+  deletePost,      // NEW - Added delete post
   likePost,
   addComment,
   sharePost,
   createStory,
   getStories,
+  deleteStory,     // NEW - Added delete story
   likeStory,
   getFarmerProfile,
   updateFarmerProfile,

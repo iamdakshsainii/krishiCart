@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   FaLeaf,
   FaUsers,
@@ -7,9 +8,6 @@ import {
   FaCheck,
   FaInstagram
 } from "react-icons/fa";
-
-// Update your team members here
-// Team image assets
 import { member1, member2, member3, member4 } from "../assets";
 
 const teamMembers = [
@@ -43,8 +41,9 @@ const teamMembers = [
   },
 ];
 
-
 const AboutPage = () => {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -65,7 +64,6 @@ const AboutPage = () => {
           </p>
         </div>
       </section>
-
       {/* Mission Section */}
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-4">
@@ -94,7 +92,6 @@ const AboutPage = () => {
           </div>
         </div>
       </section>
-
       {/* How It Works (Timeline style) */}
       <section className="mb-20">
         <h2 className="text-3xl font-bold text-center mb-14 text-blue-900 underline underline-offset-8">
@@ -141,7 +138,6 @@ const AboutPage = () => {
           ))}
         </div>
       </section>
-
       {/* Benefits Section */}
       <section className="mb-20 max-w-5xl mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-12 text-blue-900">
@@ -188,80 +184,106 @@ const AboutPage = () => {
           </div>
         </div>
       </section>
-
-     /* Team Section: Carousel */
-<section className="mb-32 px-4">
-  <h2 className="text-4xl font-bold text-center mb-4 text-blue-900">
-    Meet Our Team
-  </h2>
-  <p className="text-center text-blue-600 text-xl mb-12">
-    Passionate people behind KrishiCart
-  </p>
-  <div className="flex flex-row overflow-x-auto space-x-8 py-4 scrollbar-thin scrollbar-thumb-blue-300">
-    {teamMembers.map((member) => (
-      <div
-        key={member.id}
-        className="min-w-[220px] bg-white rounded-xl border-4 border-blue-400 shadow-blue-200 shadow-lg flex flex-col items-center p-6 group relative transition-transform hover:scale-105"
-      >
-        {/* Square Image */}
-        <div className="w-32 h-32 rounded-xl overflow-hidden mb-4 bg-blue-100 flex items-center justify-center">
-          <img
-            src={member.pic}
-            alt={member.name}
-            className="w-full h-full object-cover"
-          />
+      {/* Team Section: Carousel */}
+      <section className="mb-32 px-4">
+        <h2 className="text-4xl font-bold text-center mb-4 text-blue-900">
+          Meet Our Team
+        </h2>
+        <p className="text-center text-blue-600 text-xl mb-12">
+          Passionate people behind KrishiCart
+        </p>
+        <div className="flex flex-row overflow-x-auto space-x-8 py-4 scrollbar-thin scrollbar-thumb-blue-300">
+          {teamMembers.map((member) => (
+            <div
+              key={member.id}
+              className="min-w-[220px] bg-white rounded-xl border-4 border-blue-400 shadow-blue-200 shadow-lg flex flex-col items-center p-6 group relative transition-transform hover:scale-105"
+            >
+              {/* Square Image */}
+              <div className="w-32 h-32 rounded-xl overflow-hidden mb-4 bg-blue-100 flex items-center justify-center">
+                <img
+                  src={member.pic}
+                  alt={member.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h3 className="text-base font-semibold mb-3 text-blue-900">
+                {member.name}
+              </h3>
+              {/* Social Icons Below */}
+              <div className="flex flex-row gap-4 mt-2">
+                <a
+                  href={member.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-9 h-9 rounded-full bg-blue-100 hover:bg-blue-600 hover:text-white text-blue-700 transition"
+                  title="LinkedIn"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-9h3v9zm-1.5-10.28c-.97 0-1.75-.79-1.75-1.75s.78-1.75 1.75-1.75 1.75.79 1.75 1.75-.78 1.75-1.75 1.75zm13.5 10.28h-3v-4.5c0-1.08-.02-2.47-1.5-2.47-1.5 0-1.73 1.17-1.73 2.39v4.58h-3v-9h2.89v1.23h.04c.4-.75 1.38-1.54 2.84-1.54 3.04 0 3.6 2 3.6 4.59v4.72z"/>
+                  </svg>
+                </a>
+                <a
+                  href={member.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-9 h-9 rounded-full bg-blue-100 hover:bg-pink-500 hover:text-white text-pink-500 transition"
+                  title="Instagram"
+                >
+                  <FaInstagram className="w-5 h-5" />
+                </a>
+              </div>
+            </div>
+          ))}
         </div>
-        <h3 className="text-base font-semibold mb-3 text-blue-900">
-          {member.name}
-        </h3>
-        {/* Social Icons Below */}
-        <div className="flex flex-row gap-4 mt-2">
-          <a
-            href={member.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-blue-100 hover:bg-blue-600 hover:text-white text-blue-700 transition"
-            title="LinkedIn"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M19 0h-14c-2.76 0-5 2.24-5 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5v-14c0-2.76-2.24-5-5-5zm-11 19h-3v-9h3v9zm-1.5-10.28c-.97 0-1.75-.79-1.75-1.75s.78-1.75 1.75-1.75 1.75.79 1.75 1.75-.78 1.75-1.75 1.75zm13.5 10.28h-3v-4.5c0-1.08-.02-2.47-1.5-2.47-1.5 0-1.73 1.17-1.73 2.39v4.58h-3v-9h2.89v1.23h.04c.4-.75 1.38-1.54 2.84-1.54 3.04 0 3.6 2 3.6 4.59v4.72z"/>
-            </svg>
-          </a>
-          <a
-            href={member.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-blue-100 hover:bg-pink-500 hover:text-white text-pink-500 transition"
-            title="Instagram"
-          >
-            <FaInstagram className="w-5 h-5" />
-          </a>
-        </div>
-      </div>
-    ))}
-  </div>
-</section>
-
+      </section>
       {/* Call to Action */}
       <section className="bg-blue-600 text-white px-8 py-16 rounded-xl mx-2 mb-10 flex flex-col items-center shadow-xl">
-        <h2 className="text-3xl font-bold mb-6">Join Our Community</h2>
-        <p className="text-xl max-w-2xl text-white/90 text-center mb-8">
-          Whether you're a farmer or consumer, KrishiCart is made for you.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Link
-            to="/register"
-            className="bg-white text-blue-700 font-bold rounded-full px-8 py-3 hover:bg-blue-700 hover:text-white transition"
-          >
-            Sign Up Now
-          </Link>
-          <Link
-            to="/products"
-            className="border-2 border-white text-white font-bold rounded-full px-8 py-3 hover:bg-white hover:text-blue-700 transition"
-          >
-            Browse Products
-          </Link>
-        </div>
+        {!isAuthenticated || !["farmer", "consumer"].includes(user?.role) ? (
+          <>
+            <h2 className="text-3xl font-bold mb-6">Join Our Community</h2>
+            <p className="text-xl max-w-2xl text-white/90 text-center mb-8">
+              Whether you're a farmer or consumer, KrishiCart is made for you.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link
+                to="/register"
+                className="bg-white text-blue-700 font-bold rounded-full px-8 py-3 hover:bg-blue-700 hover:text-white transition"
+              >
+                Sign Up Now
+              </Link>
+              <Link
+                to="/products"
+                className="border-2 border-white text-white font-bold rounded-full px-8 py-3 hover:bg-white hover:text-blue-700 transition"
+              >
+                Browse Products
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="text-3xl font-bold mb-6">
+              Welcome, {user?.name}!
+            </h2>
+            <p className="text-xl max-w-2xl text-white/90 text-center mb-6">
+              Thank you for being a part of the KrishiCart community.
+            </p>
+            {user?.role === "farmer" ? (
+              <Link
+                to="/farmer/dashboard"
+                className="bg-white text-blue-700 font-bold rounded-full px-8 py-3 hover:bg-blue-700 hover:text-white transition"
+              >
+                Go to Farmer Dashboard
+              </Link>
+            ) : (
+              <Link
+                to="/products"
+                className="bg-white text-blue-700 font-bold rounded-full px-8 py-3 hover:bg-blue-700 hover:text-white transition"
+              >
+                Shop Fresh Products
+              </Link>
+            )}
+          </>
+        )}
       </section>
     </div>
   );
