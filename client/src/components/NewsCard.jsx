@@ -1,354 +1,282 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {
-  Clock,
-  User,
-  ExternalLink,
-  Bookmark,
-  BookmarkCheck,
-  Share2,
-  Eye,
-  Calendar,
-  TrendingUp,
-  Wheat
-} from 'lucide-react';
-import {
-  bookmarkArticle,
-  removeBookmark,
-  markAsRead,
-  selectBookmarkedArticles,
-  selectReadArticles
-} from '../redux/slices/newsSlice';
-import {
-  formatDate,
-  getTimeAgo,
-  truncateText,
-  shareArticle,
-  getCategoryColor,
-  estimateReadingTime,
-  isValidImageUrl,
-  getImagePlaceholder
-} from '../utils/newsUtils';
+import { Calendar, Heart, Volume2, ExternalLink, Play, Pause, Share2, Eye, Clock, TrendingUp, Star } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
-const NewsCard = ({
-  article,
-  onReadMore,
-  showBookmark = true,
-  showShare = true,
-  compact = false,
-  showCategory = true,
-  category = 'agriculture'
-}) => {
-  const dispatch = useDispatch();
-  const bookmarkedArticles = useSelector(selectBookmarkedArticles);
-  const readArticles = useSelector(selectReadArticles);
+export default function NewsCard({ article, onOpen }) {
+  const [saved, setSaved] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [views, setViews] = useState(Math.floor(Math.random() * 1000) + 50);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [readingTime, setReadingTime] = useState(0);
+  const utteranceRef = useRef(null);
 
-  const [imageError, setImageError] = useState(false);
-  const [imageLoading, setImageLoading] = useState(true);
+  useEffect(() => {
+    // Calculate reading time
+    const wordsPerMinute = 200;
+    const words = (article.titleEn + ' ' + article.summaryEn).split(' ').length;
+    setReadingTime(Math.max(1, Math.ceil(words / wordsPerMinute)));
+  }, [article]);
 
-  const isBookmarked = bookmarkedArticles.some(a => a.url === article.url);
-  const isRead = readArticles.includes(article.url);
-  const readingTime = estimateReadingTime(article.content || article.description);
+  const toggleSave = () => {
+    setSaved(!saved);
+  };
 
-  const handleBookmark = (e) => {
-    e.stopPropagation();
-    if (isBookmarked) {
-      dispatch(removeBookmark(article.url));
-    } else {
-      dispatch(bookmarkArticle(article));
+  const toggleLike = () => {
+    setLiked(!liked);
+  };
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: article.titleEn,
+          text: article.summaryEn,
+          url: article.url,
+        });
+      } else {
+        await navigator.clipboard.writeText(article.url);
+        // You could add a toast notification here
+      }
+    } catch (error) {
+      console.log('Sharing failed', error);
     }
   };
 
-  const handleShare = async (e) => {
-    e.stopPropagation();
-    const shared = await shareArticle(article);
-    if (!shared) {
-      // Fallback to copying link
-      try {
-        await navigator.clipboard.writeText(article.url);
-        // You might want to show a toast notification here
-        console.log('Link copied to clipboard');
-      } catch (err) {
-        console.error('Failed to copy link:', err);
+  const speak = (text) => {
+    try {
+      if (isPlaying) {
+        window.speechSynthesis.cancel();
+        setIsPlaying(false);
+        return;
       }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utteranceRef.current = utterance;
+
+      utterance.onstart = () => setIsPlaying(true);
+      utterance.onend = () => setIsPlaying(false);
+      utterance.onerror = () => setIsPlaying(false);
+
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      setIsPlaying(false);
     }
   };
 
   const handleCardClick = () => {
-    dispatch(markAsRead(article.url));
-    if (onReadMore) {
-      onReadMore(article);
+    setViews(prev => prev + 1);
+    onOpen(article);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (utteranceRef.current) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 7) return `${diffDays} days ago`;
+
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch {
+      return dateString;
     }
   };
 
-  const handleExternalLink = (e) => {
-    e.stopPropagation();
-    dispatch(markAsRead(article.url));
-    window.open(article.url, '_blank', 'noopener,noreferrer');
+  const getCategoryColor = (category) => {
+    const colors = {
+      technology: 'from-blue-500 to-cyan-500',
+      business: 'from-green-500 to-emerald-500',
+      sports: 'from-orange-500 to-red-500',
+      entertainment: 'from-purple-500 to-pink-500',
+      health: 'from-teal-500 to-green-500',
+      politics: 'from-indigo-500 to-blue-500',
+      default: 'from-gray-500 to-gray-600'
+    };
+    return colors[category?.toLowerCase()] || colors.default;
   };
 
-  const handleImageLoad = () => {
-    setImageLoading(false);
+  const getPriorityLevel = () => {
+    // Simulate priority based on views and recency
+    if (views > 500) return 'high';
+    if (views > 200) return 'medium';
+    return 'low';
   };
 
-  const handleImageError = () => {
-    setImageError(true);
-    setImageLoading(false);
-  };
-
-  const getDisplayImage = () => {
-    if (imageError || !isValidImageUrl(article.urlToImage)) {
-      return getImagePlaceholder(category);
-    }
-    return article.urlToImage;
-  };
-
-  if (compact) {
-    return (
-      <div
-        className="news-card bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer border border-gray-100 p-4"
-        onClick={handleCardClick}
-      >
-        <div className="flex gap-4">
-          {/* Compact Image */}
-          <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-            <img
-              src={getDisplayImage()}
-              alt={article.title}
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-            />
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="news-title text-sm font-semibold line-clamp-2 mb-1">
-                {article.title}
-              </h3>
-
-              {showBookmark && (
-                <button
-                  onClick={handleBookmark}
-                  className={`bookmark-button p-1 rounded-md transition-colors flex-shrink-0 ${
-                    isBookmarked
-                      ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                  }`}
-                  title={isBookmarked ? 'Remove bookmark' : 'Bookmark article'}
-                >
-                  {isBookmarked ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
-              <Clock size={12} />
-              <span>{getTimeAgo(article.publishedAt)}</span>
-              {readingTime > 0 && (
-                <>
-                  <span>•</span>
-                  <span>{readingTime} min read</span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const priorityLevel = getPriorityLevel();
 
   return (
-    <article
-      className={`news-card bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-100 overflow-hidden ${
-        isRead ? 'opacity-90' : ''
-      }`}
-      onClick={handleCardClick}
-    >
-      {/* Image Section */}
-      <div className="news-card-image relative aspect-video overflow-hidden bg-gray-100">
-        {imageLoading && (
-          <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-            <Wheat className="w-8 h-8 text-gray-400" />
+    <article className="group relative bg-white dark:bg-gray-900 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-700 overflow-hidden cursor-pointer border border-gray-200/50 dark:border-gray-700/50 hover:border-transparent hover:-translate-y-3 hover:scale-[1.02] transform-gpu will-change-transform">
+
+      {/* Priority indicator */}
+      {priorityLevel === 'high' && (
+        <div className="absolute top-3 right-3 z-20">
+          <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full shadow-lg">
+            <TrendingUp size={10} className="text-white" />
+            <span className="text-xs font-bold text-white">HOT</span>
           </div>
-        )}
+        </div>
+      )}
 
-        <img
-          src={getDisplayImage()}
-          alt={article.title}
-          className="w-full h-full object-cover transition-transform duration-300"
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-          style={{ display: imageLoading ? 'none' : 'block' }}
-        />
+      {/* Animated border gradient */}
+      <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 animate-pulse" />
+      </div>
 
-        {/* Overlay badges */}
-        <div className="absolute top-3 left-3 flex gap-2">
-          {showCategory && (
-            <span className={`news-category-pill category-${category}`}>
-              {category}
-            </span>
-          )}
-
-          {isRead && (
-            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium flex items-center gap-1">
-              <Eye size={12} />
-              Read
-            </span>
-          )}
+      {/* Image Container */}
+      <div className="relative overflow-hidden">
+        <div className={`w-full h-56 bg-gradient-to-br ${getCategoryColor(article.category)} ${!imageLoaded ? 'animate-pulse' : ''}`}>
+          <img
+            src={article.image}
+            alt={article.titleEn}
+            className={`w-full h-full object-cover transition-all duration-1000 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onLoad={() => setImageLoaded(true)}
+            onClick={handleCardClick}
+          />
         </div>
 
-        {/* Action buttons overlay */}
-        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          {showShare && (
-            <button
-              onClick={handleShare}
-              className="share-button p-2 bg-white/90 hover:bg-white rounded-lg shadow-md transition-colors"
-              title="Share article"
-            >
-              <Share2 size={16} className="text-gray-600" />
-            </button>
-          )}
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
+        {/* Category and reading time */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
+          <span className={`inline-flex items-center px-3 py-1.5 rounded-2xl text-xs font-bold bg-gradient-to-r ${getCategoryColor(article.category)} text-white shadow-lg backdrop-blur-sm border border-white/20`}>
+            {article.category}
+          </span>
+          <div className="flex items-center gap-1 px-2 py-1 bg-black/30 backdrop-blur-md rounded-lg text-white text-xs">
+            <Clock size={10} />
+            {readingTime} min read
+          </div>
+        </div>
+
+        {/* Stats overlay */}
+        <div className="absolute bottom-4 left-4 flex items-center gap-3 text-white text-xs">
+          <div className="flex items-center gap-1 px-2 py-1 bg-black/40 backdrop-blur-md rounded-lg">
+            <Eye size={10} />
+            {views}
+          </div>
+          <div className="flex items-center gap-1 px-2 py-1 bg-black/40 backdrop-blur-md rounded-lg">
+            <Calendar size={10} />
+            {formatDate(article.date)}
+          </div>
+        </div>
+
+        {/* Quick action buttons */}
+        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-200">
           <button
-            onClick={handleExternalLink}
-            className="p-2 bg-white/90 hover:bg-white rounded-lg shadow-md transition-colors"
-            title="Read on source"
+            className="p-2.5 rounded-2xl bg-white/90 backdrop-blur-xl shadow-xl hover:bg-white hover:scale-110 transition-all duration-200"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleShare();
+            }}
+            title="Share article"
           >
-            <ExternalLink size={16} className="text-gray-600" />
+            <Share2 size={14} className="text-gray-700" />
+          </button>
+          <button
+            className="p-2.5 rounded-2xl bg-white/90 backdrop-blur-xl shadow-xl hover:bg-white hover:scale-110 transition-all duration-200"
+            onClick={(e) => {
+              e.stopPropagation();
+              speak(`${article.titleEn}. ${article.summaryEn}`);
+            }}
+            title={isPlaying ? "Stop reading" : "Read aloud"}
+          >
+            {isPlaying ? (
+              <Pause size={14} className="text-blue-600" />
+            ) : (
+              <Play size={14} className="text-gray-700" />
+            )}
           </button>
         </div>
-
-        {/* Reading progress indicator */}
-        {isRead && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-blue-600"></div>
-        )}
       </div>
 
       {/* Content Section */}
-      <div className="p-6">
-        {/* Article Meta */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3 text-sm text-gray-500">
-            {article.source?.name && (
-              <span className="source-badge">
-                {article.source.name}
-              </span>
-            )}
+      <div className="relative p-6 space-y-4" onClick={handleCardClick}>
+        {/* Title */}
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300">
+          {article.titleEn}
+        </h3>
 
-            <div className="flex items-center gap-1">
-              <Calendar size={14} />
-              <span>{formatDate(article.publishedAt)}</span>
-            </div>
-          </div>
+        {/* Summary */}
+        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 leading-relaxed">
+          {article.summaryEn}
+        </p>
 
-          {/* Bookmark button */}
-          {showBookmark && (
+        {/* Action Bar */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
+          {/* Left actions */}
+          <div className="flex items-center gap-2">
             <button
-              onClick={handleBookmark}
-              className={`bookmark-button p-2 rounded-lg transition-all duration-200 ${
-                isBookmarked
-                  ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              className={`group/btn flex items-center gap-2 px-3 py-2 rounded-2xl transition-all duration-300 hover:scale-105 ${
+                liked
+                  ? "bg-gradient-to-r from-pink-50 to-red-50 dark:from-pink-900/20 dark:to-red-900/20 text-red-500"
+                  : "bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gradient-to-r hover:from-pink-50 hover:to-red-50 dark:hover:from-pink-900/20 dark:hover:to-red-900/20 hover:text-red-500"
               }`}
-              title={isBookmarked ? 'Remove bookmark' : 'Bookmark article'}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleLike();
+              }}
             >
-              {isBookmarked ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
+              <Heart
+                size={16}
+                className={`transition-all duration-300 ${liked ? 'fill-current scale-110' : 'group-hover/btn:scale-110'}`}
+              />
+              <span className="text-xs font-medium">Like</span>
             </button>
-          )}
-        </div>
 
-        {/* Article Title */}
-        <h2 className="news-title text-xl font-bold mb-3 line-clamp-2 leading-tight">
-          {article.title}
-        </h2>
-
-        {/* Article Description */}
-        {article.description && (
-          <p className="news-description text-gray-600 mb-4 line-clamp-3 leading-relaxed">
-            {truncateText(article.description, 150)}
-          </p>
-        )}
-
-        {/* Article Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            {article.author && (
-              <div className="flex items-center gap-1">
-                <User size={14} />
-                <span className="truncate max-w-[150px]">{article.author}</span>
-              </div>
-            )}
-
-            <div className="flex items-center gap-1">
-              <Clock size={14} />
-              <span>{getTimeAgo(article.publishedAt)}</span>
-            </div>
-
-            {readingTime > 0 && (
-              <div className="flex items-center gap-1">
-                <TrendingUp size={14} />
-                <span>{readingTime} min read</span>
-              </div>
-            )}
+            <button
+              className={`group/btn flex items-center gap-2 px-3 py-2 rounded-2xl transition-all duration-300 hover:scale-105 ${
+                saved
+                  ? "bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 text-blue-500"
+                  : "bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/20 dark:hover:to-cyan-900/20 hover:text-blue-500"
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleSave();
+              }}
+            >
+              <Star
+                size={16}
+                className={`transition-all duration-300 ${saved ? 'fill-current scale-110' : 'group-hover/btn:scale-110'}`}
+              />
+              <span className="text-xs font-medium">Save</span>
+            </button>
           </div>
 
           {/* Read more button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleCardClick();
-            }}
-            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          <a
+            className="group/link flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-2xl font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
           >
             Read More
-          </button>
+            <ExternalLink size={14} className="group-hover/link:translate-x-1 transition-transform duration-200" />
+          </a>
         </div>
       </div>
 
-      {/* Hover effect overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-blue-500/5 to-transparent opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div>
+      {/* Enhanced shine effect */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none overflow-hidden rounded-3xl">
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:left-[100%] transition-all duration-1500 ease-out" />
+        </div>
+      </div>
     </article>
   );
-};
-
-// Loading skeleton component
-export const NewsCardSkeleton = ({ compact = false }) => {
-  if (compact) {
-    return (
-      <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4">
-        <div className="flex gap-4">
-          <div className="w-20 h-20 bg-gray-200 rounded-lg news-skeleton"></div>
-          <div className="flex-1">
-            <div className="h-4 bg-gray-200 rounded news-skeleton mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded news-skeleton w-3/4 mb-2"></div>
-            <div className="h-3 bg-gray-200 rounded news-skeleton w-1/2"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-      <div className="aspect-video bg-gray-200 news-skeleton"></div>
-      <div className="p-6">
-        <div className="flex justify-between mb-3">
-          <div className="h-4 bg-gray-200 rounded news-skeleton w-24"></div>
-          <div className="h-8 w-8 bg-gray-200 rounded-lg news-skeleton"></div>
-        </div>
-        <div className="h-6 bg-gray-200 rounded news-skeleton mb-2"></div>
-        <div className="h-6 bg-gray-200 rounded news-skeleton w-4/5 mb-4"></div>
-        <div className="h-4 bg-gray-200 rounded news-skeleton mb-2"></div>
-        <div className="h-4 bg-gray-200 rounded news-skeleton w-3/4 mb-4"></div>
-        <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-          <div className="h-4 bg-gray-200 rounded news-skeleton w-32"></div>
-          <div className="h-8 bg-gray-200 rounded-lg news-skeleton w-20"></div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default NewsCard;
+}

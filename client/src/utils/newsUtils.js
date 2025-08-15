@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // Date formatting utilities
 export const formatDate = (dateString) => {
   if (!dateString) return 'Unknown date';
