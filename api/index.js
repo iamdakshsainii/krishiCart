@@ -29,6 +29,7 @@ const allowedOrigins = [
   "https://krishi-cart-chi.vercel.app",
   "http://localhost:3000",
   "http://localhost:5173",
+  "https://krishi-cart-f3e484tpw-sainidaksh70-gmailcoms-projects.vercel.app",
 ];
 
 // ===== CORS middleware =====
