@@ -14,11 +14,11 @@ import {
 import { Search, Filter, Grid, List, Star, Heart, TrendingUp, Calendar, Clock, Globe, ChevronDown, X, SortAsc, BarChart3, Bookmark, Volume2, Share2, RefreshCw, ExternalLink, Play, Pause, Eye } from "lucide-react";
 
 const CATEGORIES = [
-  { key: "agriculture", label: "Agriculture", icon: Globe, color: "from-green-500 to-emerald-500" },
-  { key: "weather", label: "Weather", icon: Calendar, color: "from-blue-500 to-cyan-500" },
-  { key: "market", label: "Market", icon: TrendingUp, color: "from-orange-500 to-red-500" },
-  { key: "technology", label: "Technology", icon: BarChart3, color: "from-purple-500 to-pink-500" },
-  { key: "government", label: "Government", icon: Grid, color: "from-indigo-500 to-blue-500" },
+  { key: "agriculture", label: "Agriculture", icon: Globe, color: "from-blue-500 to-blue-600" },
+  { key: "weather", label: "Weather", icon: Calendar, color: "from-blue-400 to-blue-500" },
+  { key: "market", label: "Market", icon: TrendingUp, color: "from-blue-600 to-blue-700" },
+  { key: "technology", label: "Technology", icon: BarChart3, color: "from-blue-500 to-indigo-500" },
+  { key: "government", label: "Government", icon: Grid, color: "from-indigo-500 to-blue-600" },
 ];
 
 const SORT_OPTIONS = [
@@ -37,7 +37,7 @@ function EnhancedNewsCard({ article, viewMode, onBookmark, isBookmarked }) {
 
   const getCategoryColor = (category) => {
     const categoryData = CATEGORIES.find(c => c.key === category?.toLowerCase());
-    return categoryData?.color || "from-gray-500 to-gray-600";
+    return categoryData?.color || "from-blue-500 to-blue-600";
   };
 
   const formatDate = (dateString) => {
@@ -132,7 +132,7 @@ function EnhancedNewsCard({ article, viewMode, onBookmark, isBookmarked }) {
 
   if (viewMode === 'list') {
     return (
-      <div className="group flex gap-4 bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200/50 dark:border-gray-700/50 hover:border-blue-200 dark:hover:border-blue-700/50">
+      <div className="group flex gap-4 bg-white hover:bg-blue-50/30 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 border border-blue-100/50 hover:border-blue-200">
         <div className="relative w-32 h-24 rounded-xl overflow-hidden flex-shrink-0">
           <div className={`w-full h-full bg-gradient-to-br ${getCategoryColor(article.category)} ${!imageLoaded ? 'animate-pulse' : ''}`}>
             <img
@@ -148,20 +148,20 @@ function EnhancedNewsCard({ article, viewMode, onBookmark, isBookmarked }) {
           </div>
         </div>
 
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 space-y-3">
           <div className="flex items-center gap-2 text-xs">
-            <span className={`px-2 py-1 rounded-lg bg-gradient-to-r ${getCategoryColor(article.category)} text-white font-medium`}>
+            <span className={`px-3 py-1 rounded-full bg-gradient-to-r ${getCategoryColor(article.category)} text-white font-medium`}>
               {article.source?.name || 'News'}
             </span>
-            <span className="text-gray-500">{formatDate(article.publishedAt)}</span>
-            <span className="text-gray-500">{readTime} min</span>
+            <span className="text-blue-400">{formatDate(article.publishedAt)}</span>
+            <span className="text-blue-400">{readTime} min</span>
           </div>
 
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors cursor-pointer">
+          <h3 className="text-lg font-bold text-gray-800 line-clamp-2 group-hover:text-blue-600 transition-colors cursor-pointer">
             {article.title}
           </h3>
 
-          <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+          <p className="text-sm text-gray-600 line-clamp-2">
             {article.description}
           </p>
 
@@ -169,32 +169,32 @@ function EnhancedNewsCard({ article, viewMode, onBookmark, isBookmarked }) {
             <div className="flex items-center gap-3">
               <button
                 onClick={(e) => { e.stopPropagation(); setLiked(!liked); }}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all ${liked ? 'text-red-500 bg-red-50 dark:bg-red-900/20' : 'text-gray-500 hover:text-red-500'}`}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${liked ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'}`}
               >
                 <Heart size={14} className={liked ? 'fill-current' : ''} />
-                <span className="text-xs">Like</span>
+                Like
               </button>
 
               <button
                 onClick={handleBookmark}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-all ${isBookmarked ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-500 hover:text-blue-500'}`}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${isBookmarked ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'}`}
               >
                 <Star size={14} className={isBookmarked ? 'fill-current' : ''} />
-                <span className="text-xs">Save</span>
+                Save
               </button>
 
               <button
                 onClick={(e) => { e.stopPropagation(); handleShare(); }}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg text-gray-500 hover:text-blue-500 transition-all"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
               >
                 <Share2 size={14} />
-                <span className="text-xs">Share</span>
+                Share
               </button>
             </div>
 
             <button
               onClick={handleReadMore}
-              className="px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg text-xs font-medium hover:scale-105 transition-transform"
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full text-xs font-medium transition-colors"
             >
               Read More
             </button>
@@ -205,12 +205,12 @@ function EnhancedNewsCard({ article, viewMode, onBookmark, isBookmarked }) {
   }
 
   return (
-    <article className="group relative bg-white dark:bg-gray-900 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-700 overflow-hidden cursor-pointer border border-gray-200/50 dark:border-gray-700/50 hover:border-transparent hover:-translate-y-3 hover:scale-[1.02] transform-gpu">
+    <article className="group relative bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-500 overflow-hidden cursor-pointer border border-blue-100/50 hover:border-blue-200 hover:-translate-y-1 transform-gpu">
 
       {/* Trending indicator for recent articles */}
       {new Date() - new Date(article.publishedAt) < 24 * 60 * 60 * 1000 && (
-        <div className="absolute top-3 right-3 z-20">
-          <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full shadow-lg">
+        <div className="absolute top-4 right-4 z-20">
+          <div className="flex items-center gap-1 px-2 py-1 bg-blue-500 rounded-full shadow-lg">
             <TrendingUp size={10} className="text-white" />
             <span className="text-xs font-bold text-white">NEW</span>
           </div>
@@ -222,7 +222,7 @@ function EnhancedNewsCard({ article, viewMode, onBookmark, isBookmarked }) {
           <img
             src={imageUrl}
             alt={article.title}
-            className={`w-full h-full object-cover transition-all duration-1000 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             onLoad={() => setImageLoaded(true)}
             onError={(e) => {
               e.target.src = `https://picsum.photos/400/300?random=${Math.random()}`;
@@ -231,43 +231,43 @@ function EnhancedNewsCard({ article, viewMode, onBookmark, isBookmarked }) {
           />
         </div>
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
         <div className="absolute top-4 left-4 flex flex-col gap-2">
-          <span className={`inline-flex items-center px-3 py-1.5 rounded-2xl text-xs font-bold bg-gradient-to-r ${getCategoryColor(article.category)} text-white shadow-lg backdrop-blur-sm border border-white/20`}>
+          <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r ${getCategoryColor(article.category)} text-white shadow-md`}>
             {article.source?.name || 'News'}
           </span>
-          <div className="flex items-center gap-1 px-2 py-1 bg-black/30 backdrop-blur-md rounded-lg text-white text-xs">
+          <div className="flex items-center gap-1 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-full text-blue-600 text-xs font-medium">
             <Clock size={10} />
-            {readTime} min read
+            {readTime} min
           </div>
         </div>
 
         <div className="absolute bottom-4 left-4 flex items-center gap-3 text-white text-xs">
-          <div className="flex items-center gap-1 px-2 py-1 bg-black/40 backdrop-blur-md rounded-lg">
+          <div className="flex items-center gap-1 px-2 py-1 bg-white/20 backdrop-blur-md rounded-full">
             <Eye size={10} />
             {Math.floor(Math.random() * 1000) + 100}
           </div>
-          <div className="flex items-center gap-1 px-2 py-1 bg-black/40 backdrop-blur-md rounded-lg">
+          <div className="flex items-center gap-1 px-2 py-1 bg-white/20 backdrop-blur-md rounded-full">
             <Calendar size={10} />
             {formatDate(article.publishedAt)}
           </div>
         </div>
 
         {/* Quick action buttons */}
-        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-200">
+        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
           <button
-            className="p-2.5 rounded-2xl bg-white/90 backdrop-blur-xl shadow-xl hover:bg-white hover:scale-110 transition-all duration-200"
+            className="p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white hover:scale-110 transition-all duration-200"
             onClick={(e) => {
               e.stopPropagation();
               handleShare();
             }}
             title="Share article"
           >
-            <Share2 size={14} className="text-gray-700" />
+            <Share2 size={14} className="text-blue-600" />
           </button>
           <button
-            className="p-2.5 rounded-2xl bg-white/90 backdrop-blur-xl shadow-xl hover:bg-white hover:scale-110 transition-all duration-200"
+            className="p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white hover:scale-110 transition-all duration-200"
             onClick={(e) => {
               e.stopPropagation();
               speak(`${article.title}. ${article.description}`);
@@ -277,47 +277,47 @@ function EnhancedNewsCard({ article, viewMode, onBookmark, isBookmarked }) {
             {isPlaying ? (
               <Pause size={14} className="text-blue-600" />
             ) : (
-              <Play size={14} className="text-gray-700" />
+              <Play size={14} className="text-blue-600" />
             )}
           </button>
         </div>
       </div>
 
       <div className="relative p-6 space-y-4">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300">
+        <h3 className="text-xl font-bold text-gray-800 line-clamp-2 leading-tight group-hover:text-blue-600 transition-all duration-300">
           {article.title}
         </h3>
 
-        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 leading-relaxed">
+        <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
           {article.description}
         </p>
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between pt-4 border-t border-blue-100">
           <div className="flex items-center gap-2">
             <button
               onClick={(e) => { e.stopPropagation(); setLiked(!liked); }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-2xl transition-all duration-300 hover:scale-105 ${
-                liked ? "bg-gradient-to-r from-pink-50 to-red-50 dark:from-pink-900/20 dark:to-red-900/20 text-red-500" : "bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-red-500"
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
+                liked ? "bg-blue-50 text-blue-600" : "bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
               }`}
             >
-              <Heart size={16} className={liked ? 'fill-current scale-110' : ''} />
-              <span className="text-xs font-medium">Like</span>
+              <Heart size={16} className={liked ? 'fill-current' : ''} />
+              Like
             </button>
 
             <button
               onClick={handleBookmark}
-              className={`flex items-center gap-2 px-3 py-2 rounded-2xl transition-all duration-300 hover:scale-105 ${
-                isBookmarked ? "bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 text-blue-500" : "bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-blue-500"
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
+                isBookmarked ? "bg-blue-50 text-blue-600" : "bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
               }`}
             >
-              <Star size={16} className={isBookmarked ? 'fill-current scale-110' : ''} />
-              <span className="text-xs font-medium">Save</span>
+              <Star size={16} className={isBookmarked ? 'fill-current' : ''} />
+              Save
             </button>
           </div>
 
           <button
             onClick={(e) => { e.stopPropagation(); handleReadMore(); }}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-2xl font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+            className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium text-sm shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
           >
             Read More
             <ExternalLink size={14} />
@@ -412,18 +412,18 @@ export default function EpicNewsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-purple-900/10">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-blue-50/50">
       {/* Epic Header */}
-      <header className="relative overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10" />
+      <header className="relative overflow-hidden bg-white/80 backdrop-blur-xl border-b border-blue-100">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-blue-400/5 to-blue-600/5" />
 
         <div className="relative max-w-7xl mx-auto px-4 py-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="space-y-2">
-              <h1 className="text-4xl lg:text-5xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <h1 className="text-4xl lg:text-5xl font-black bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
                 KrishiCart News
               </h1>
-              <p className="text-gray-600 dark:text-gray-300 text-lg">
+              <p className="text-gray-600 text-lg">
                 Real-time agricultural news and insights
               </p>
             </div>
@@ -431,10 +431,10 @@ export default function EpicNewsPage() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowSaved(!showSaved)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-medium transition-all duration-300 hover:scale-105 ${
+                className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 ${
                   showSaved
-                    ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                    : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
+                    ? "bg-blue-500 text-white shadow-lg"
+                    : "bg-white text-gray-600 border border-blue-200 hover:border-blue-300 hover:bg-blue-50"
                 }`}
               >
                 <Star size={20} className={showSaved ? 'fill-current' : ''} />
@@ -443,7 +443,7 @@ export default function EpicNewsPage() {
 
               <button
                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 hover:scale-105"
+                className="p-3 rounded-full bg-white border border-blue-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-300 hover:scale-105"
                 title={`Switch to ${viewMode === 'grid' ? 'list' : 'grid'} view`}
               >
                 {viewMode === 'grid' ? <List size={20} /> : <Grid size={20} />}
@@ -451,7 +451,7 @@ export default function EpicNewsPage() {
 
               <button
                 onClick={handleRefresh}
-                className="p-3 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-green-300 dark:hover:border-green-600 transition-all duration-300 hover:scale-105"
+                className="p-3 rounded-full bg-white border border-blue-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50 transition-all duration-300 hover:scale-105"
                 title="Refresh news"
               >
                 <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
@@ -466,13 +466,13 @@ export default function EpicNewsPage() {
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="relative">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-blue-400" size={20} />
             <input
               type="text"
               value={localSearchTerm}
               onChange={(e) => setLocalSearchTerm(e.target.value)}
               placeholder="Search for agricultural news, market updates, weather reports..."
-              className="w-full pl-12 pr-32 py-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-500/20 text-lg transition-all duration-300"
+              className="w-full pl-12 pr-32 py-4 bg-white border border-blue-200 rounded-2xl focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 text-lg transition-all duration-300"
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-2">
               <button
@@ -485,7 +485,7 @@ export default function EpicNewsPage() {
                 type="button"
                 onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
                 className={`p-2 rounded-xl transition-all duration-300 hover:scale-105 ${
-                  showAdvancedFilter ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                  showAdvancedFilter ? 'bg-blue-500 text-white' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
                 }`}
               >
                 <Filter size={20} />
@@ -503,10 +503,10 @@ export default function EpicNewsPage() {
               <button
                 key={category.key}
                 onClick={() => handleCategoryChange(category.key)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-medium transition-all duration-300 hover:scale-105 ${
+                className={`flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 ${
                   isActive
                     ? `bg-gradient-to-r ${category.color} text-white shadow-lg`
-                    : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
+                    : "bg-white text-gray-600 border border-blue-200 hover:border-blue-300 hover:bg-blue-50"
                 }`}
               >
                 <Icon size={18} />
@@ -518,25 +518,25 @@ export default function EpicNewsPage() {
 
         {/* Advanced Filters */}
         {showAdvancedFilter && (
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+          <div className="bg-white rounded-2xl border border-blue-200 p-6 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Advanced Filters</h3>
+              <h3 className="text-lg font-bold text-gray-800">Advanced Filters</h3>
               <button
                 onClick={() => setShowAdvancedFilter(false)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-2 rounded-lg hover:bg-blue-50 transition-colors"
               >
-                <X size={20} className="text-gray-500" />
+                <X size={20} className="text-blue-400" />
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Date Range */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Date Range</label>
+                <label className="text-sm font-medium text-gray-700">Date Range</label>
                 <select
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value)}
-                  className="w-full p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:border-blue-500"
+                  className="w-full p-3 bg-white border border-blue-200 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 >
                   <option value="all">All Time</option>
                   <option value="today">Today</option>
@@ -547,11 +547,11 @@ export default function EpicNewsPage() {
 
               {/* Sort By */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Sort By</label>
+                <label className="text-sm font-medium text-gray-700">Sort By</label>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:border-blue-500"
+                  className="w-full p-3 bg-white border border-blue-200 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 >
                   {SORT_OPTIONS.map(option => (
                     <option key={option.key} value={option.key}>{option.label}</option>
@@ -564,8 +564,8 @@ export default function EpicNewsPage() {
 
         {/* Results Summary */}
         <div className="flex items-center justify-between">
-          <div className="text-gray-600 dark:text-gray-300">
-            <span className="font-medium">{filteredArticles.length}</span> articles
+          <div className="text-gray-600">
+            <span className="font-medium text-blue-600">{filteredArticles.length}</span> articles
             {searchTerm && (
               <span> for "<span className="font-medium text-blue-600">{searchTerm}</span>"</span>
             )}
@@ -574,15 +574,15 @@ export default function EpicNewsPage() {
 
           <div className="text-sm text-gray-500 flex items-center gap-2">
             <span>Showing {viewMode} view</span>
-            {loading && <RefreshCw size={16} className="animate-spin" />}
+            {loading && <RefreshCw size={16} className="animate-spin text-blue-500" />}
           </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4">
-            <div className="text-red-800 dark:text-red-200 font-medium">Error loading news</div>
-            <div className="text-red-600 dark:text-red-300 text-sm mt-1">{error}</div>
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+            <div className="text-red-800 font-medium">Error loading news</div>
+            <div className="text-red-600 text-sm mt-1">{error}</div>
           </div>
         )}
       </div>
@@ -606,12 +606,12 @@ export default function EpicNewsPage() {
           {loading && (
             <div className="flex items-center gap-2">
               <RefreshCw size={20} className="animate-spin text-blue-500" />
-              <span className="text-gray-600 dark:text-gray-300">Loading more articles...</span>
+              <span className="text-gray-600">Loading more articles...</span>
             </div>
           )}
           {!loading && currentPage >= totalPages && !showSaved && articles.length > 0 && (
             <div className="text-center">
-              <div className="text-gray-400 text-lg mb-2">You're all caught up!</div>
+              <div className="text-blue-400 text-lg mb-2">You're all caught up!</div>
               <div className="text-gray-500 text-sm">Check back later for more news</div>
             </div>
           )}
@@ -622,12 +622,12 @@ export default function EpicNewsPage() {
           <div className="text-center py-12">
             <div className="mb-4">
               {showSaved ? (
-                <Star size={48} className="mx-auto text-gray-300 dark:text-gray-600" />
+                <Star size={48} className="mx-auto text-blue-300" />
               ) : (
-                <Globe size={48} className="mx-auto text-gray-300 dark:text-gray-600" />
+                <Globe size={48} className="mx-auto text-blue-300" />
               )}
             </div>
-            <div className="text-gray-400 text-xl mb-2">
+            <div className="text-blue-400 text-xl mb-2">
               {showSaved ? 'No saved articles yet' : error ? 'Unable to load news' : 'No articles found'}
             </div>
             <div className="text-gray-500 text-sm mb-4">
@@ -641,7 +641,7 @@ export default function EpicNewsPage() {
             {!showSaved && (
               <button
                 onClick={handleRefresh}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl font-medium hover:scale-105 transition-all duration-300"
+                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium transition-all duration-300"
               >
                 Refresh News
               </button>
@@ -654,7 +654,7 @@ export default function EpicNewsPage() {
       <div className="fixed bottom-6 right-6 lg:hidden">
         <button
           onClick={handleRefresh}
-          className={`p-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:scale-110 transition-all duration-300 ${loading ? 'animate-pulse' : ''}`}
+          className={`p-4 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:scale-110 transition-all duration-300 ${loading ? 'animate-pulse' : ''}`}
           title="Refresh news"
         >
           <RefreshCw size={24} className={loading ? 'animate-spin' : ''} />

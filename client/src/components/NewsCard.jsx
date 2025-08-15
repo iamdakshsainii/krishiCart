@@ -99,13 +99,13 @@ export default function NewsCard({ article, onOpen }) {
 
   const getCategoryColor = (category) => {
     const colors = {
-      technology: 'from-blue-500 to-cyan-500',
-      business: 'from-green-500 to-emerald-500',
-      sports: 'from-orange-500 to-red-500',
-      entertainment: 'from-purple-500 to-pink-500',
-      health: 'from-teal-500 to-green-500',
-      politics: 'from-indigo-500 to-blue-500',
-      default: 'from-gray-500 to-gray-600'
+      technology: 'from-blue-500 to-blue-600',
+      business: 'from-blue-400 to-blue-500',
+      sports: 'from-blue-600 to-indigo-500',
+      entertainment: 'from-indigo-500 to-blue-600',
+      health: 'from-blue-500 to-cyan-500',
+      politics: 'from-indigo-600 to-blue-700',
+      default: 'from-blue-500 to-blue-600'
     };
     return colors[category?.toLowerCase()] || colors.default;
   };
@@ -120,12 +120,12 @@ export default function NewsCard({ article, onOpen }) {
   const priorityLevel = getPriorityLevel();
 
   return (
-    <article className="group relative bg-white dark:bg-gray-900 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-700 overflow-hidden cursor-pointer border border-gray-200/50 dark:border-gray-700/50 hover:border-transparent hover:-translate-y-3 hover:scale-[1.02] transform-gpu will-change-transform">
+    <article className="group relative bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-500 overflow-hidden cursor-pointer border border-blue-100 hover:border-blue-200 hover:-translate-y-1 transform-gpu will-change-transform">
 
       {/* Priority indicator */}
       {priorityLevel === 'high' && (
-        <div className="absolute top-3 right-3 z-20">
-          <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full shadow-lg">
+        <div className="absolute top-4 right-4 z-20">
+          <div className="flex items-center gap-1 px-2 py-1 bg-blue-500 rounded-full shadow-lg">
             <TrendingUp size={10} className="text-white" />
             <span className="text-xs font-bold text-white">HOT</span>
           </div>
@@ -133,8 +133,8 @@ export default function NewsCard({ article, onOpen }) {
       )}
 
       {/* Animated border gradient */}
-      <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 animate-pulse" />
+      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-100/50 via-blue-200/50 to-blue-100/50 animate-pulse" />
       </div>
 
       {/* Image Container */}
@@ -143,52 +143,52 @@ export default function NewsCard({ article, onOpen }) {
           <img
             src={article.image}
             alt={article.titleEn}
-            className={`w-full h-full object-cover transition-all duration-1000 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
             onLoad={() => setImageLoaded(true)}
             onClick={handleCardClick}
           />
         </div>
 
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
         {/* Category and reading time */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">
-          <span className={`inline-flex items-center px-3 py-1.5 rounded-2xl text-xs font-bold bg-gradient-to-r ${getCategoryColor(article.category)} text-white shadow-lg backdrop-blur-sm border border-white/20`}>
+          <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r ${getCategoryColor(article.category)} text-white shadow-md`}>
             {article.category}
           </span>
-          <div className="flex items-center gap-1 px-2 py-1 bg-black/30 backdrop-blur-md rounded-lg text-white text-xs">
+          <div className="flex items-center gap-1 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-full text-blue-600 text-xs font-medium">
             <Clock size={10} />
-            {readingTime} min read
+            {readingTime} min
           </div>
         </div>
 
         {/* Stats overlay */}
         <div className="absolute bottom-4 left-4 flex items-center gap-3 text-white text-xs">
-          <div className="flex items-center gap-1 px-2 py-1 bg-black/40 backdrop-blur-md rounded-lg">
+          <div className="flex items-center gap-1 px-2 py-1 bg-white/20 backdrop-blur-md rounded-full">
             <Eye size={10} />
             {views}
           </div>
-          <div className="flex items-center gap-1 px-2 py-1 bg-black/40 backdrop-blur-md rounded-lg">
+          <div className="flex items-center gap-1 px-2 py-1 bg-white/20 backdrop-blur-md rounded-full">
             <Calendar size={10} />
             {formatDate(article.date)}
           </div>
         </div>
 
         {/* Quick action buttons */}
-        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-200">
+        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
           <button
-            className="p-2.5 rounded-2xl bg-white/90 backdrop-blur-xl shadow-xl hover:bg-white hover:scale-110 transition-all duration-200"
+            className="p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white hover:scale-110 transition-all duration-200"
             onClick={(e) => {
               e.stopPropagation();
               handleShare();
             }}
             title="Share article"
           >
-            <Share2 size={14} className="text-gray-700" />
+            <Share2 size={14} className="text-blue-600" />
           </button>
           <button
-            className="p-2.5 rounded-2xl bg-white/90 backdrop-blur-xl shadow-xl hover:bg-white hover:scale-110 transition-all duration-200"
+            className="p-2 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white hover:scale-110 transition-all duration-200"
             onClick={(e) => {
               e.stopPropagation();
               speak(`${article.titleEn}. ${article.summaryEn}`);
@@ -198,7 +198,7 @@ export default function NewsCard({ article, onOpen }) {
             {isPlaying ? (
               <Pause size={14} className="text-blue-600" />
             ) : (
-              <Play size={14} className="text-gray-700" />
+              <Play size={14} className="text-blue-600" />
             )}
           </button>
         </div>
@@ -207,24 +207,24 @@ export default function NewsCard({ article, onOpen }) {
       {/* Content Section */}
       <div className="relative p-6 space-y-4" onClick={handleCardClick}>
         {/* Title */}
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all duration-300">
+        <h3 className="text-xl font-bold text-gray-800 line-clamp-2 leading-tight group-hover:text-blue-600 transition-all duration-300">
           {article.titleEn}
         </h3>
 
         {/* Summary */}
-        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 leading-relaxed">
+        <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
           {article.summaryEn}
         </p>
 
         {/* Action Bar */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between pt-4 border-t border-blue-100">
           {/* Left actions */}
           <div className="flex items-center gap-2">
             <button
-              className={`group/btn flex items-center gap-2 px-3 py-2 rounded-2xl transition-all duration-300 hover:scale-105 ${
+              className={`group/btn flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
                 liked
-                  ? "bg-gradient-to-r from-pink-50 to-red-50 dark:from-pink-900/20 dark:to-red-900/20 text-red-500"
-                  : "bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gradient-to-r hover:from-pink-50 hover:to-red-50 dark:hover:from-pink-900/20 dark:hover:to-red-900/20 hover:text-red-500"
+                  ? "bg-blue-50 text-blue-600"
+                  : "bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
               }`}
               onClick={(e) => {
                 e.stopPropagation();
@@ -233,16 +233,16 @@ export default function NewsCard({ article, onOpen }) {
             >
               <Heart
                 size={16}
-                className={`transition-all duration-300 ${liked ? 'fill-current scale-110' : 'group-hover/btn:scale-110'}`}
+                className={`transition-all duration-300 ${liked ? 'fill-current' : 'group-hover/btn:scale-110'}`}
               />
-              <span className="text-xs font-medium">Like</span>
+              Like
             </button>
 
             <button
-              className={`group/btn flex items-center gap-2 px-3 py-2 rounded-2xl transition-all duration-300 hover:scale-105 ${
+              className={`group/btn flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 ${
                 saved
-                  ? "bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 text-blue-500"
-                  : "bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/20 dark:hover:to-cyan-900/20 hover:text-blue-500"
+                  ? "bg-blue-50 text-blue-600"
+                  : "bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
               }`}
               onClick={(e) => {
                 e.stopPropagation();
@@ -251,15 +251,15 @@ export default function NewsCard({ article, onOpen }) {
             >
               <Star
                 size={16}
-                className={`transition-all duration-300 ${saved ? 'fill-current scale-110' : 'group-hover/btn:scale-110'}`}
+                className={`transition-all duration-300 ${saved ? 'fill-current' : 'group-hover/btn:scale-110'}`}
               />
-              <span className="text-xs font-medium">Save</span>
+              Save
             </button>
           </div>
 
           {/* Read more button */}
           <a
-            className="group/link flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-2xl font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 transform"
+            className="group/link flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-full font-medium text-sm shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 transform"
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
@@ -272,9 +272,9 @@ export default function NewsCard({ article, onOpen }) {
       </div>
 
       {/* Enhanced shine effect */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none overflow-hidden rounded-3xl">
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none overflow-hidden rounded-2xl">
         <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 group-hover:left-[100%] transition-all duration-1500 ease-out" />
+          <div className="absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-blue-200/30 to-transparent skew-x-12 group-hover:left-[100%] transition-all duration-1000 ease-out" />
         </div>
       </div>
     </article>
