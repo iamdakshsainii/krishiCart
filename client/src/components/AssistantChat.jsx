@@ -120,7 +120,7 @@ const AssistantChat = ({ isOpen, onClose }) => {
   };
 
   // Gemini API configuration
-  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY; // Add this to your .env file
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
   const GEMINI_API_URL =
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
 
@@ -151,7 +151,7 @@ Give a comprehensive answer with practical advice.`,
           temperature: 0.7,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 800, // Increased for more detailed responses
+          maxOutputTokens: 1000, // Increased for more detailed responses
           stopSequences: [],
         },
         safetySettings: [

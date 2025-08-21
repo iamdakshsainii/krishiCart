@@ -8,7 +8,7 @@ const API_KEYS = {
 // Indian categories for filtering
 const CATEGORIES = {
   general: 'general',
-  agriculture: 'business',
+  agriculture: 'agriculture',
   weather: 'science',
   market: 'business',
   technology: 'technology',

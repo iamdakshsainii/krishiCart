@@ -24,7 +24,7 @@ import FarmerDetailPage from "./pages/FarmerDetailPage";
 import ProductsPage from "./pages/ProductsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import FarmConnectFeed from "./components/FarmConnectFeed";
+// import FarmConnectFeed from "./components/FarmConnectFeed";
 
 // News Pages
 import NewsPage from "./pages/NewsPage";
@@ -55,7 +55,7 @@ import AdminOrdersPage from "./pages/admin/OrdersPage";
 
 // Extras
 import WeatherWidget from "./components/WeatherWidget";
-import FarmerCustomerConnect from "./components/FarmerCustomerConnect";
+// import FarmerCustomerConnect from "./components/FarmerCustomerConnect";
 
 function App() {
   const dispatch = useDispatch();
@@ -82,7 +82,7 @@ function App() {
 
             {/* News Routes */}
             <Route path="news" element={<NewsPage />} />
-            <Route path="news/:id" element={<NewsDetailPage />} />
+           <Route path="news/:id" element={<NewsDetailPage />} />
 
             {/* Weather Page */}
             <Route
