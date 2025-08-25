@@ -21,7 +21,7 @@ class NewsService {
     this.apiRotation = ['newsapi', 'gnews', 'newsdata'];
   }
 
-  // Rotate between APIs for better coverage and fallback
+  // Rotate between APIs for better coverage and fallbacks
   getNextApi() {
     const api = this.apiRotation[this.currentApiIndex];
     this.currentApiIndex = (this.currentApiIndex + 1) % this.apiRotation.length;
