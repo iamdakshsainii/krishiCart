@@ -2,7 +2,6 @@
 
 **krishiCart** is a full-stack web application developed during a hackathon to bridge the gap between farmers and consumers. It enables farmers to showcase their produce, connect directly with buyers, and build trust — all within one scalable digital platform.
 
-🚀 **Winner of the Full Stack Web Development Hackathon** at the University of South Asia — built and proudly maintained by **Daksh Saini** & Team Terminator 🏆
 
 ---
 
